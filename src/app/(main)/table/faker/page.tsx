@@ -1,7 +1,96 @@
+"use client";
+
+import { useMemo, useReducer, useState } from "react";
+
+import { makeData } from "./makeData";
+
+import {
+  flexRender,
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+} from "@tanstack/react-table";
+import { columns } from "./components/columns";
+
 const FakerTablePage = () => {
+  const [data, setData] = useState(() => makeData(10));
+  const refreshData = () => setData(() => makeData(10));
+
+  const rerender = useReducer(() => ({}), {})[1];
+
+  const [rowSelection, setRowSelection] = useState({});
+  const [globalFilter, setGlobalFilter] = useState("");
+
+  const fakerColumns = useMemo(() => columns, []);
+
+  const table = useReactTable({
+    data,
+    columns,
+    state: {
+      rowSelection,
+    },
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    debugTable: true,
+  });
+
   return (
     <>
-      <div>Faker Table Page</div>
+      <div className="p-2">
+        <div>
+          <input
+            value={globalFilter ?? ""}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="p-2 font-lg shadow border border-black rounded-md"
+            placeholder="Search all columns..."
+          />
+        </div>
+        <div className="h-2" />
+        <table>
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <th key={header.id} colSpan={header.colSpan}>
+                      {header.isPlaceholder ? null : (
+                        <>
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </>
+                      )}
+                    </th>
+                  );
+                })}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => {
+              return (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => {
+                    return (
+                      <td key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 };
