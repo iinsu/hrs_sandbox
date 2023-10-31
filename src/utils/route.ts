@@ -1,10 +1,15 @@
-import { ClipboardList, Home } from "lucide-react";
+import { ClipboardList, Home, Sheet } from "lucide-react";
 
 export const mainRoutes = [
   {
     icon: Home,
     label: "홈",
     href: "/",
+  },
+  {
+    icon: Sheet,
+    label: "테이블",
+    href: "/table",
   },
   {
     icon: ClipboardList,
