@@ -52,19 +52,29 @@ export const columns: ColumnDef<Person>[] = [
     footer: (props) => props.column.id,
     columns: [
       {
-        accessorKey: "visits",
-        header: () => <span>Visits</span>,
+        accessorKey: "age",
+        header: () => "Age",
         footer: (props) => props.column.id,
       },
       {
-        accessorKey: "status",
-        header: "Status",
-        footer: (props) => props.column.id,
-      },
-      {
-        accessorKey: "progress",
-        header: "Profile Progress",
-        footer: (props) => props.column.id,
+        header: "More Info",
+        columns: [
+          {
+            accessorKey: "visits",
+            header: () => <span>Visits</span>,
+            footer: (props) => props.column.id,
+          },
+          {
+            accessorKey: "status",
+            header: "Status",
+            footer: (props) => props.column.id,
+          },
+          {
+            accessorKey: "progress",
+            header: "Profile Progress",
+            footer: (props) => props.column.id,
+          },
+        ],
       },
     ],
   },
