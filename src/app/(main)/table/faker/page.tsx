@@ -14,7 +14,7 @@ import { columns } from "./components/columns";
 
 const FakerTablePage = () => {
   const [isMounted, setIsMounted] = useState(false);
-  const [data, setData] = useState(() => makeData(20));
+  const [data, setData] = useState(() => makeData(100));
   const rerender = useReducer(() => ({}), {})[1];
 
   const [rowSelection, setRowSelection] = useState({});
@@ -53,9 +53,9 @@ const FakerTablePage = () => {
 
   return (
     <>
-      <div className="p-2">
-        <table>
-          <thead>
+      <div className="overflow-auto h-[400px] w-full">
+        <table className="w-full">
+          <thead className="sticky top-0 bg-slate-200">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -94,21 +94,73 @@ const FakerTablePage = () => {
             })}
           </tbody>
         </table>
-        <button
-          type="button"
-          onClick={() => rerender()}
-          className="border p-2 rounded-md hover:bg-slate-200 mr-2"
-        >
-          Force Rerender
-        </button>
-        <button
-          type="button"
-          onClick={() => refreshData()}
-          className="border p-2 rounded-md hover:bg-slate-200 mr-2"
-        >
-          Refresh
-        </button>
       </div>
+      <div className="flex gap-4">
+        <div className="flex items-center gap-2">
+          <button
+            className="border rounded p-1 disabled:text-gray-100 disabled:cursor-default cursor-pointer"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {"<<"}
+          </button>
+          <button
+            className="border rounded p-1 disabled:text-gray-100 disabled:cursor-default cursor-pointer"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {"<"}
+          </button>
+          <button
+            className="border rounded p-1 disabled:text-gray-100 disabled:cursor-default cursor-pointer"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {">"}
+          </button>
+          <button
+            className="border rounded p-1 disabled:text-gray-100 disabled:cursor-default cursor-pointer"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+          >
+            {">>"}
+          </button>
+        </div>
+        <div className="flex items-center gap-1">
+          <div>Page</div>
+          <strong>
+            {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
+          </strong>
+        </div>
+
+        <select
+          value={table.getState().pagination.pageSize}
+          onChange={(e) => {
+            table.setPageSize(Number(e.target.value));
+          }}
+        >
+          {[20, 30, 40, 50].map((pageSize) => (
+            <option key={pageSize} value={pageSize}>
+              Show {pageSize}
+            </option>
+          ))}
+        </select>
+      </div>
+      <button
+        type="button"
+        onClick={() => rerender()}
+        className="border p-2 rounded-md hover:bg-slate-200 mr-2"
+      >
+        Force Rerender
+      </button>
+      <button
+        type="button"
+        onClick={() => refreshData()}
+        className="border p-2 rounded-md hover:bg-slate-200 mr-2"
+      >
+        Refresh
+      </button>
     </>
   );
 };
