@@ -161,6 +161,22 @@ const FakerTablePage = () => {
       >
         Refresh
       </button>
+      <div className="flex items-center gap-1">
+        <span>Go to page:</span>
+        <input
+          type="number"
+          defaultValue={table.getState().pagination.pageIndex + 1}
+          max={table.getPageCount()}
+          min={1}
+          onChange={(event) => {
+            const page = event.target.value
+              ? Number(event.target.value) - 1
+              : 0;
+            table.setPageIndex(page);
+          }}
+          className="border p-1 rounded w-16"
+        />
+      </div>
     </>
   );
 };
