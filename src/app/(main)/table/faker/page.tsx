@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 
 import { makeData } from "./makeData";
 
@@ -14,6 +14,7 @@ import {
 import { columns } from "./components/columns";
 
 const FakerTablePage = () => {
+  const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState(() => makeData(10));
   const refreshData = () => setData(() => makeData(10));
 
@@ -26,7 +27,7 @@ const FakerTablePage = () => {
 
   const table = useReactTable({
     data,
-    columns,
+    columns: fakerColumns,
     state: {
       rowSelection,
     },
@@ -38,18 +39,17 @@ const FakerTablePage = () => {
     debugTable: true,
   });
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return;
+  }
+
   return (
     <>
       <div className="p-2">
-        <div>
-          <input
-            value={globalFilter ?? ""}
-            onChange={(event) => setGlobalFilter(event.target.value)}
-            className="p-2 font-lg shadow border border-black rounded-md"
-            placeholder="Search all columns..."
-          />
-        </div>
-        <div className="h-2" />
         <table>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
