@@ -10,8 +10,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { mobile } = useMenu();
   return (
     <>
-      <div className="h-full w-full md:w-[1200px] md:max-w-[1600px] flex relative shadow-xl">
-        <div className="h-[4.25rem] w-[inherit] fixed inset-y-0 z-50 ">
+      <div className="h-full w-full md:max-w-[1600px] flex relative shadow-xl">
+        <div className="h-[4.25rem] w-full md:max-w-[1600px] fixed inset-y-0 z-50 ">
           <MainHeader />
         </div>
         <div
