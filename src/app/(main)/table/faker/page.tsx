@@ -38,8 +38,6 @@ const FakerTablePage = () => {
     debugTable: true,
   });
 
-  console.log(table.getTotalSize());
-
   const refreshData = () => {
     setData(() => makeData(20));
     table.resetRowSelection();
