@@ -53,9 +53,9 @@ const FakerTablePage = () => {
 
   return (
     <>
-      <div className="overflow-auto h-[400px] w-full">
+      <div className="w-full">
         <table className="w-full">
-          <thead className="sticky top-0 bg-slate-200">
+          <thead className="grid bg-slate-200 w-full">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -75,7 +75,7 @@ const FakerTablePage = () => {
               </tr>
             ))}
           </thead>
-          <tbody>
+          <tbody className="block h-[400px] overflow-auto w-full">
             {table.getRowModel().rows.map((row) => {
               return (
                 <tr key={row.id}>
