@@ -8,14 +8,13 @@ import {
   flexRender,
   useReactTable,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { columns } from "./components/columns";
 
 const FakerTablePage = () => {
   const [isMounted, setIsMounted] = useState(false);
-  const [data, setData] = useState(() => makeData(10));
+  const [data, setData] = useState(() => makeData(20));
   const rerender = useReducer(() => ({}), {})[1];
 
   const [rowSelection, setRowSelection] = useState({});
@@ -24,19 +23,25 @@ const FakerTablePage = () => {
   const table = useReactTable({
     data,
     columns: fakerColumns,
+    initialState: {
+      pagination: {
+        pageSize: 20,
+      },
+    },
     state: {
       rowSelection,
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     debugTable: true,
   });
 
+  console.log(table.getTotalSize());
+
   const refreshData = () => {
-    setData(() => makeData(10));
+    setData(() => makeData(20));
     table.resetRowSelection();
   };
 
