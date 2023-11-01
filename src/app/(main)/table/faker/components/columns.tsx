@@ -47,4 +47,7 @@ export const columns: ColumnDef<Person>[] = [
   {
     accessorKey: "progress",
   },
+  {
+    accessorKey: "createdAt",
+  },
 ];
