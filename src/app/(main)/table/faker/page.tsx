@@ -16,13 +16,9 @@ import { columns } from "./components/columns";
 const FakerTablePage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState(() => makeData(10));
-  const refreshData = () => setData(() => makeData(10));
-
   const rerender = useReducer(() => ({}), {})[1];
 
   const [rowSelection, setRowSelection] = useState({});
-  const [globalFilter, setGlobalFilter] = useState("");
-
   const fakerColumns = useMemo(() => columns, []);
 
   const table = useReactTable({
@@ -38,6 +34,11 @@ const FakerTablePage = () => {
     getPaginationRowModel: getPaginationRowModel(),
     debugTable: true,
   });
+
+  const refreshData = () => {
+    setData(() => makeData(10));
+    table.resetRowSelection();
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -90,6 +91,20 @@ const FakerTablePage = () => {
             })}
           </tbody>
         </table>
+        <button
+          type="button"
+          onClick={() => rerender()}
+          className="border p-2 rounded-md hover:bg-slate-200 mr-2"
+        >
+          Force Rerender
+        </button>
+        <button
+          type="button"
+          onClick={() => refreshData()}
+          className="border p-2 rounded-md hover:bg-slate-200 mr-2"
+        >
+          Refresh
+        </button>
       </div>
     </>
   );
