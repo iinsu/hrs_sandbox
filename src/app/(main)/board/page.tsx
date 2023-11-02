@@ -1,6 +1,6 @@
 "use client";
 
-import { $getRoot, $getSelection } from "lexical";
+import { $getRoot, $getSelection, EditorState } from "lexical";
 import { useEffect, useMemo, useState } from "react";
 
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
@@ -15,6 +15,7 @@ const theme = {
   ltr: "ltr",
   rtl: "rtl",
   paragraph: "editor-paragraph",
+  placeholder: "editor-placeholder",
 };
 
 function MyCustomAutoFocusPlugin() {
@@ -31,7 +32,7 @@ function MyCustomAutoFocusPlugin() {
 // Catch any errors that occur during Lexical updates and log them
 // or throw them as needed. If you don't throw them, Lexical will
 // try to recover gracefully without losing user data.
-function onError(error: any) {
+function onError(error: Error) {
   console.error(error);
 }
 
@@ -44,7 +45,7 @@ const BoardMainPage = () => {
     onError,
   };
 
-  const onChange = (editorState: any) => {
+  const onChange = (editorState: EditorState) => {
     /* const editorStateJSON = editorState.toJSON();
     setEditorState(JSON.stringify(editorStateJSON) as any); */
     editorState.read(() => {
