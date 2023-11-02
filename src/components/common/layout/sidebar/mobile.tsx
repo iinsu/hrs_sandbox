@@ -15,7 +15,7 @@ export const MobileSidebar = () => {
     <>
       <div
         className={cn(
-          "w-[5.625rem] origin-left h-full overflow-y-auto bg-white shadow-sm border-r",
+          "w-[74px] origin-left h-full overflow-y-auto bg-white shadow-sm border-r",
           sidebarOpen && "flex flex-col fixed"
         )}
       >

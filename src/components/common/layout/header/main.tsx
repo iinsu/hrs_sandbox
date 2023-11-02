@@ -21,7 +21,7 @@ const MainHeader = () => {
         <div className="flex">
           <div
             onClick={onToggle}
-            className="hidden md:flex cursor-pointer hover:text-orange-500"
+            className="hidden xl:flex cursor-pointer hover:text-orange-500"
           >
             <Menu />
           </div>

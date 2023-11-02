@@ -20,7 +20,7 @@ export const Sidebar = () => {
       {mobile ? (
         <div
           className={cn(
-            "w-[5.625rem] origin-left h-full overflow-y-auto bg-white shadow-sm border-r"
+            "w-[74px] origin-left h-full overflow-y-auto bg-white shadow-sm border-r"
           )}
         >
           <div className="h-[104px] flex flex-col items-center">
