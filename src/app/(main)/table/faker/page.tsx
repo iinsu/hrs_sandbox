@@ -10,7 +10,7 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import { columns } from "./components/columns";
+import { columns } from "./_components/columns";
 
 const FakerTablePage = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -39,7 +39,7 @@ const FakerTablePage = () => {
   });
 
   const refreshData = () => {
-    setData(() => makeData(20));
+    setData(() => makeData(100));
     table.resetRowSelection();
   };
 
