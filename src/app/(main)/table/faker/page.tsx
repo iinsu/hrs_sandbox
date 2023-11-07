@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { makeData } from "./makeData";
 
@@ -15,7 +15,8 @@ import { columns } from "./_components/columns";
 const FakerTablePage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState(() => makeData(100));
-  const rerender = useReducer(() => ({}), {})[1];
+
+  console.log("data", data);
 
   const [rowSelection, setRowSelection] = useState({});
   const fakerColumns = useMemo(() => columns, []);
@@ -147,13 +148,7 @@ const FakerTablePage = () => {
           ))}
         </select>
       </div>
-      <button
-        type="button"
-        onClick={() => rerender()}
-        className="border p-2 rounded-md hover:bg-slate-200 mr-2"
-      >
-        Force Rerender
-      </button>
+
       <button
         type="button"
         onClick={() => refreshData()}

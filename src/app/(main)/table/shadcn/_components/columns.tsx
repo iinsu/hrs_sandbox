@@ -1,8 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Person } from "../makeData";
-import { IndeterminateCheckbox } from "./checkbox";
+import { Posts } from "../makeData";
+import { IndeterminateCheckbox } from "../../faker/_components/checkbox";
 
-export const columns: ColumnDef<Person>[] = [
+export const columns: ColumnDef<Posts>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -26,22 +26,16 @@ export const columns: ColumnDef<Person>[] = [
     ),
   },
   {
-    accessorKey: "firstName",
+    accessorKey: "title",
   },
   {
-    accessorKey: "lastName",
+    accessorKey: "author",
   },
   {
-    accessorKey: "age",
-  },
-  {
-    accessorKey: "visits",
+    accessorKey: "price",
   },
   {
     accessorKey: "status",
-  },
-  {
-    accessorKey: "progress",
   },
   {
     accessorKey: "createdAt",

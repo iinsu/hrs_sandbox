@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DataTable } from "./_components/table";
 import { useTableState } from "./_hooks/useTableState";
 import { makeData } from "./makeData";
-import { columns } from "../faker/_components/columns";
+import { columns } from "./_components/columns";
 
 const ShadcnTablePage = () => {
   const [isMounted, setIsMounted] = useState(false);

@@ -5,12 +5,13 @@ const TablePage = () => {
   return (
     <>
       <div className="p-2">
-        <Button>
-          <Link href="/table/shadcn">HRS Table</Link>
-        </Button>
-        <Button>
-          <Link href="/table/faker">Faker Table</Link>
-        </Button>
+        <Link href="/table/shadcn">
+          <Button type="button">HRS Table</Button>
+        </Link>
+
+        <Link href="/table/faker">
+          <Button type="button">Faker Table</Button>
+        </Link>
       </div>
     </>
   );
