@@ -105,7 +105,7 @@ export function DataTable<TData, TValue>({
     },
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
+    manualPagination: false,
     debugTable: true,
 
     /* 열 선택 기능*/
