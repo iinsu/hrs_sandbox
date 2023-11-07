@@ -16,8 +16,6 @@ const FakerTablePage = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState(() => makeData(100));
 
-  console.log("data", data);
-
   const [rowSelection, setRowSelection] = useState({});
   const fakerColumns = useMemo(() => columns, []);
 
