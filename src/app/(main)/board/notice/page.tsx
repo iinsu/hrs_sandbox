@@ -1,3 +1,5 @@
+"use client";
+
 import { LexicalEditor } from "../_components/texteditor/editor";
 
 const NoticePage = () => {
