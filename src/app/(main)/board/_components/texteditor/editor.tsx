@@ -4,6 +4,8 @@ import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { Toolbar } from "./toolbar";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 
 const theme = {
   paragraph: "mb-1",
@@ -43,6 +45,8 @@ export const LexicalEditor = () => {
             }
             ErrorBoundary={LexicalErrorBoundary}
           />
+          <Toolbar />
+          <HistoryPlugin />
         </LexicalComposer>
       </div>
     </>
