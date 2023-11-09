@@ -17,6 +17,7 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
+  ImagePlus,
   Italic,
   Redo2,
   Strikethrough,
@@ -24,6 +25,7 @@ import {
   Undo2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import useModal from "@/hooks/useModal";
 
 export const Toolbar = () => {
   const [editor] = useLexicalComposerContext();
@@ -31,6 +33,7 @@ export const Toolbar = () => {
   const [isItalic, setIsItalic] = useState(false);
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
+  const [modal, showModal] = useModal();
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -96,7 +99,7 @@ export const Toolbar = () => {
         >
           <Underline className="h-5 w-5 text-white" />
         </button>
-        <span className="w-[1px] bg-gray-600 block h-full"></span>
+        <span className="w-[1px] bg-gray-600 block h-full" />
         <button
           className="p-1 rounded-sm hover:bg-gray-700 transition-colors duration-100 ease-in"
           onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left")}
@@ -127,7 +130,21 @@ export const Toolbar = () => {
         >
           <AlignJustify className="h-5 w-5 text-white" />
         </button>
-        <span className="w-[1px] bg-gray-600 block h-full"></span>
+        <span className="w-[1px] bg-gray-600 block h-full" />
+        <button
+          className="p-1 rounded-sm hover:bg-gray-700 transition-colors duration-100 ease-in"
+          onClick={() => {
+            showModal("Insert Image", (onClose) => (
+              <InsertImageDialog
+                activeEditor={activeEditor}
+                onClose={onClose}
+              />
+            ));
+          }}
+        >
+          <ImagePlus className="h-5 w-5 text-white" />
+        </button>
+        <span className="w-[1px] bg-gray-600 block h-full" />
         <button
           className="p-1 rounded-sm hover:bg-gray-700 transition-colors duration-100 ease-in"
           onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
