@@ -8,7 +8,13 @@ import { Toolbar } from "./toolbar";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { EditorState } from "lexical";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { useRef } from "react";
+import { Dispatch, SetStateAction, useRef } from "react";
+
+interface TextProps {
+  text?: string;
+  setText: Dispatch<SetStateAction<string | undefined>>;
+  setReadOnly?: Dispatch<SetStateAction<boolean>>;
+}
 
 const theme = {
   paragraph: "mb-1",
@@ -33,7 +39,7 @@ const loadContent = async () => {
   return value;
 };
 
-export const LexicalEditor = () => {
+export const LexicalEditor = ({ setText, setReadOnly }: TextProps) => {
   const initialEditorState = loadContent();
   const editorStateRef = useRef<EditorState>();
 
@@ -66,6 +72,8 @@ export const LexicalEditor = () => {
               onClick={() => {
                 if (editorStateRef.current) {
                   console.log(JSON.stringify(editorStateRef.current));
+                  setText(JSON.stringify(editorStateRef.current));
+                  setReadOnly && setReadOnly(true);
                 }
               }}
             >
