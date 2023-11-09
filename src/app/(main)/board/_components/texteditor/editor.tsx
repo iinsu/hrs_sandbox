@@ -62,7 +62,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
             ErrorBoundary={LexicalErrorBoundary}
           />
           <Toolbar />
-          <div className="absolute right-0 bottom-[-50px] bg-slate-200 p-1 rounded-sm">
+          <div className="absolute right-0 bottom-[-50px] bg-slate-200 py-1 px-2 rounded-sm hover:bg-slate-500 hover:text-white">
             <button
               type="submit"
               onClick={() => {
