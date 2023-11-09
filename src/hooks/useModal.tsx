@@ -1,6 +1,6 @@
 "use client";
 
-import Modal from "@/components/ui/modal";
+import Modal from "@/components/ui/lexcial/modal";
 import { useCallback, useMemo, useState } from "react";
 import * as React from "react";
 
