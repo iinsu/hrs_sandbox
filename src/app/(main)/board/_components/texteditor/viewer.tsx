@@ -2,12 +2,17 @@
 
 import {
   InitialConfigType,
-  InitialEditorStateType,
   LexicalComposer,
 } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { Dispatch, SetStateAction } from "react";
+
+interface ViewerProps {
+  text: string | undefined;
+  setReadOnly?: Dispatch<SetStateAction<boolean>>;
+}
 
 const theme = {
   paragraph: "mb-1",
@@ -28,11 +33,7 @@ function onError(error: Error) {
 const emptyText =
   '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
 
-export const LexicalViewer = ({ text }: { text: string | undefined }) => {
-  /* if (typeof text !== "string") {
-    return;
-  } */
-
+export const LexicalViewer = ({ text, setReadOnly }: ViewerProps) => {
   const initialConfig: InitialConfigType = {
     namespace: "TextEditor",
     theme,
@@ -58,6 +59,12 @@ export const LexicalViewer = ({ text }: { text: string | undefined }) => {
           />
         </LexicalComposer>
       </div>
+      <button
+        className="py-1 px-2 bg-slate-200 mt-2 rounded-sm hover:bg-slate-500 hover:text-white"
+        onClick={() => setReadOnly && setReadOnly(false)}
+      >
+        Edit
+      </button>
     </>
   );
 };

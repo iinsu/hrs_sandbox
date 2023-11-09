@@ -11,7 +11,7 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { Dispatch, SetStateAction, useRef } from "react";
 
 interface TextProps {
-  text?: string;
+  text?: string | undefined;
   setText: Dispatch<SetStateAction<string | undefined>>;
   setReadOnly?: Dispatch<SetStateAction<boolean>>;
 }
@@ -32,22 +32,18 @@ function onError(error: Error) {
   console.error(error);
 }
 
-const loadContent = async () => {
-  // 'empty' editor
-  const value =
-    '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
-  return value;
-};
+const emptyText =
+  '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
 
-export const LexicalEditor = ({ setText, setReadOnly }: TextProps) => {
-  const initialEditorState = loadContent();
+export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
   const editorStateRef = useRef<EditorState>();
 
   const initialConfig = {
     namespace: "TextEditor",
     theme,
     onError,
-    initialEditorState,
+    editable: true,
+    editorState: text ?? emptyText,
   };
 
   return (

@@ -14,9 +14,13 @@ const NoticePage = () => {
       </div>
       <div className="max-w-[800px] mt-6 mx-auto">
         {readOnly ? (
-          <LexicalViewer text={text} />
+          <LexicalViewer text={text} setReadOnly={setReadOnly} />
         ) : (
-          <LexicalEditor setText={setText} setReadOnly={setReadOnly} />
+          <LexicalEditor
+            text={text}
+            setText={setText}
+            setReadOnly={setReadOnly}
+          />
         )}
       </div>
     </>
