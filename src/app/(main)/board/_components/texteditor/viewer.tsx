@@ -8,6 +8,7 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { Dispatch, SetStateAction } from "react";
+import PlaygroundNodes from "../nodes/playground-nodes";
 
 interface ViewerProps {
   text: string | undefined;
@@ -40,7 +41,10 @@ export const LexicalViewer = ({ text, setReadOnly }: ViewerProps) => {
     onError,
     editorState: text ?? emptyText,
     editable: false,
+    nodes: [...PlaygroundNodes],
   };
+
+  console.log(text);
 
   return (
     <>

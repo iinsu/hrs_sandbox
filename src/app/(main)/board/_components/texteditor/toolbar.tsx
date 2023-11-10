@@ -4,13 +4,16 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import {
   $getSelection,
   $isRangeSelection,
+  $isRootOrShadowRoot,
+  COMMAND_PRIORITY_CRITICAL,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   REDO_COMMAND,
+  SELECTION_CHANGE_COMMAND,
   UNDO_COMMAND,
 } from "lexical";
 import { useCallback, useEffect, useState } from "react";
-import { mergeRegister } from "@lexical/utils";
+import { $findMatchingParent, mergeRegister } from "@lexical/utils";
 import {
   AlignCenter,
   AlignJustify,
@@ -26,6 +29,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useModal from "@/hooks/useModal";
+import { InsertImageDialog } from "../plugins/image-plugin";
 
 export const Toolbar = () => {
   const [editor] = useLexicalComposerContext();
@@ -33,18 +37,35 @@ export const Toolbar = () => {
   const [isItalic, setIsItalic] = useState(false);
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
+  const [activeEditor, setActiveEditor] = useState(editor);
   const [modal, showModal] = useModal();
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
 
     if ($isRangeSelection(selection)) {
+      const anchorNode = selection.anchor.getNode();
+      let element =
+        anchorNode.getKey() === "root"
+          ? anchorNode
+          : $findMatchingParent(anchorNode, (event) => {
+              const parent = event.getParent();
+              return parent !== null && $isRootOrShadowRoot(parent);
+            });
+
+      if (element === null) {
+        element = anchorNode.getTopLevelElementOrThrow();
+      }
+
+      const elementKey = element.getKey();
+      const elementDOM = activeEditor.getElementByKey(elementKey);
+
       setIsBold(selection.hasFormat("bold"));
       setIsItalic(selection.hasFormat("italic"));
       setIsStrikethrough(selection.hasFormat("strikethrough"));
       setIsUnderline(selection.hasFormat("underline"));
     }
-  }, []);
+  }, [activeEditor]);
 
   useEffect(() => {
     return mergeRegister(
@@ -55,6 +76,18 @@ export const Toolbar = () => {
       })
     );
   }, [updateToolbar, editor]);
+
+  useEffect(() => {
+    return editor.registerCommand(
+      SELECTION_CHANGE_COMMAND,
+      (_payload, newEditor) => {
+        updateToolbar();
+        setActiveEditor(newEditor);
+        return false;
+      },
+      COMMAND_PRIORITY_CRITICAL
+    );
+  }, [editor, updateToolbar]);
 
   return (
     <>
@@ -157,6 +190,7 @@ export const Toolbar = () => {
         >
           <Redo2 className="h-5 w-5 text-white" />
         </button>
+        {modal}
       </div>
     </>
   );

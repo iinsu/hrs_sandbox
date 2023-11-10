@@ -9,6 +9,8 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { EditorState } from "lexical";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { Dispatch, SetStateAction, useRef } from "react";
+import ImagesPlugin from "../plugins/image-plugin";
+import PlaygroundNodes from "../nodes/playground-nodes";
 
 interface TextProps {
   text?: string | undefined;
@@ -44,6 +46,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
     onError,
     editable: true,
     editorState: text ?? emptyText,
+    nodes: [...PlaygroundNodes],
   };
 
   return (
@@ -77,6 +80,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
             </button>
           </div>
           <HistoryPlugin />
+          <ImagesPlugin captionsEnabled={false} />
           <OnChangePlugin
             onChange={(editorState) => (editorStateRef.current = editorState)}
           />
