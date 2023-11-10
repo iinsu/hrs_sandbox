@@ -70,7 +70,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
               type="submit"
               onClick={() => {
                 if (editorStateRef.current) {
-                  console.log(JSON.stringify(editorStateRef.current));
+                  //console.log(JSON.stringify(editorStateRef.current));
                   setText(JSON.stringify(editorStateRef.current));
                   setReadOnly && setReadOnly(true);
                 }

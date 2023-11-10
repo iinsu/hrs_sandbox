@@ -44,8 +44,6 @@ export const LexicalViewer = ({ text, setReadOnly }: ViewerProps) => {
     nodes: [...PlaygroundNodes],
   };
 
-  console.log(text);
-
   return (
     <>
       <div className="bg-white relative rounded-sm shadow-sm border border-gray-200">
