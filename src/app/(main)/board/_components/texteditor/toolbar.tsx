@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useModal from "@/hooks/useModal";
-import { InsertImageUriDialogBody } from "../plugins/image-plugin";
 
 export const Toolbar = () => {
   const [editor] = useLexicalComposerContext();
@@ -136,7 +135,7 @@ export const Toolbar = () => {
           className="p-1 rounded-sm hover:bg-gray-700 transition-colors duration-100 ease-in"
           onClick={() => {
             showModal("Insert Image", (onClose) => (
-              <InsertImageUriDialogBody
+              <InsertImageDialog
                 activeEditor={activeEditor}
                 onClose={onClose}
               />
