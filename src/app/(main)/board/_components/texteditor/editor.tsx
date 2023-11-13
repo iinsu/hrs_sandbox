@@ -49,6 +49,10 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
     nodes: [...PlaygroundNodes],
   };
 
+  const handleChange = (editorState: EditorState) => {
+    editorStateRef.current = editorState;
+  };
+
   return (
     <>
       <div className="bg-white relative rounded-sm shadow-sm border border-gray-200">
@@ -81,9 +85,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
           </div>
           <HistoryPlugin />
           <ImagesPlugin captionsEnabled={false} />
-          <OnChangePlugin
-            onChange={(editorState) => (editorStateRef.current = editorState)}
-          />
+          <OnChangePlugin onChange={handleChange} />
         </LexicalComposer>
       </div>
     </>

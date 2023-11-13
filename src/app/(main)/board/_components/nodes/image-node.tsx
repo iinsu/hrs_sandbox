@@ -1,6 +1,9 @@
 import * as React from "react";
 import { Suspense } from "react";
 
+import AWS from "aws-sdk";
+import S3 from "aws-sdk";
+
 import type {
   DOMConversionMap,
   DOMConversionOutput,
@@ -45,6 +48,8 @@ export type SerializedImageNode = Spread<
   },
   SerializedLexicalNode
 >;
+
+const URI_REGEX = /data:([-\w]+\/[-+\w.]+)?(;?\w+=[-\w]+)*(;base64)?,.*/gu;
 
 function convertImageElement(domNode: Node): null | DOMConversionOutput {
   if (domNode instanceof HTMLImageElement) {
@@ -225,6 +230,36 @@ export function $createImageNode({
   caption,
   key,
 }: ImagePayload): ImageNode {
+  AWS.config.update({
+    region: process.env.NEXT_PUBLIC_AWS_REGION,
+    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS,
+    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET,
+  });
+  console.log("data uri :", URI_REGEX.test(src));
+  const name = new Date();
+  const uri = URI_REGEX.test(src);
+
+  const buffer = Buffer.from(
+    src.replace(/^data:image\/\w+;base64,/, ""),
+    "base64"
+  );
+  const type = src.split(";")[0].split("/")[1];
+
+  const bucket = new AWS.S3();
+
+  const data = {
+    Key: `front-test/${name}.${type}`,
+    Body: buffer,
+    ContentEncoding: "base64",
+    Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET!,
+    ContentType: `image/${type}`,
+  };
+
+  bucket
+    .upload(data)
+    .promise()
+    .then((res) => console.log(res.Location));
+
   return $applyNodeReplacement(
     new ImageNode(
       src,
