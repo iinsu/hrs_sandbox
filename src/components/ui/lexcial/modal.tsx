@@ -61,10 +61,23 @@ function ProtalImpl({
   }, [closeOnClickOutside, onClose]);
 
   return (
-    <div>
-      <div>
-        <h2>{title}</h2>
-        <button onClick={onClose}>X</button>
+    <div className="flex justify-center items-center fixed flex-col top-0 bottom-0 left-0 right-0 bg-[#282828] z-50 grow-0 shrink">
+      <div
+        className="p-5 min-h-[100px] min-w-[300px] flex grow-0 bg-white flex-col relative shadow-sm shadow-[#444] rounded-sm"
+        tabIndex={-1}
+        ref={modalRef}
+      >
+        <h2 className="text-[#444] m-0 pb-2 border-b-2 border-b-[#ccc]">
+          {title}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close modal"
+          className="border-none absolute right-5 rounded-md justify-center items-center flex w-7 h-7 text-center bg-[#eee] cursor-pointer hover:bg-[#ddd]"
+        >
+          X
+        </button>
         <div>{children}</div>
       </div>
     </div>

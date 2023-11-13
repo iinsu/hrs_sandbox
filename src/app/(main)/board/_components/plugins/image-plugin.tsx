@@ -166,6 +166,7 @@ export function InsertImageDialog({
         <DialogButtonsList>
           <Button
             data-test-id="image-modal-option-sample"
+            className="mb-2"
             onClick={() =>
               onClick(
                 hasModifier.current
