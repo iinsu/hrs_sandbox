@@ -22,6 +22,8 @@ import Button from "@/components/ui/lexcial/button";
 import TextInput from "@/components/ui/lexcial/text-input";
 import FileInput from "@/components/ui/lexcial/file-input";
 
+import AWS from "aws-sdk";
+
 export type InsertImagePlayload = Readonly<ImagePayload>;
 
 export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePlayload> =
@@ -32,16 +34,42 @@ export function InsertImageUploadedDialogBody({
 }: {
   onClick: (payload: InsertImagePlayload) => void;
 }) {
+  AWS.config.update({
+    region: process.env.NEXT_PUBLIC_AWS_REGION,
+    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS,
+    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET,
+  });
+
   const [src, setSrc] = useState("");
   const [altText, setAltText] = useState("");
 
   const isDisabled = src === "";
 
-  const loadImage = (files: FileList | null) => {
+  const loadImage = async (files: FileList | null) => {
     const reader = new FileReader();
-    reader.onload = function () {
+    reader.onload = async function () {
       if (typeof reader.result === "string") {
-        setSrc(reader.result);
+        const dataURL = reader.result;
+        const imageFile = Buffer.from(
+          dataURL.replace(/^data:image\/\w+;base64,/, ""),
+          "base64"
+        );
+        const type = dataURL.split(";")[0].split("/")[1];
+        const name = new Date();
+
+        const bucket = new AWS.S3();
+
+        const savedData = {
+          Key: `front-test/${name}.${type}`,
+          Body: imageFile,
+          ContentEncoding: "base64",
+          Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET!,
+          ContentType: `image/${type}`,
+        };
+
+        const response = await bucket.upload(savedData).promise();
+        const resURL = response.Location;
+        setSrc(resURL);
       }
       return "";
     };
