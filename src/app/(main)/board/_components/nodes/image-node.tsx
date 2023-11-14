@@ -2,7 +2,6 @@ import * as React from "react";
 import { Suspense } from "react";
 
 import type {
-  DOMConversionOutput,
   DOMExportOutput,
   EditorConfig,
   LexicalNode,
@@ -41,31 +40,6 @@ export type SerializedImageNode = Spread<
   },
   SerializedLexicalNode
 >;
-
-const URI_REGEX = /data:([-\w]+\/[-+\w.]+)?(;?\w+=[-\w]+)*(;base64)?,.*/gu;
-
-function convertImageElement(domNode: Node): null | DOMConversionOutput {
-  if (domNode instanceof HTMLImageElement) {
-    const { alt: altText, src, width, height } = domNode;
-    console.log("URI-TEST", URI_REGEX.test(src));
-    console.log("URI-TEST2", src.match(URI_REGEX));
-    const testResult = URI_REGEX.test(src);
-    if (testResult) {
-      console.log("TRUE");
-      return null;
-    } else {
-      console.log("FALSE");
-      const node = $createImageNode({
-        altText,
-        height,
-        src,
-        width,
-      });
-      return { node };
-    }
-  }
-  return null;
-}
 
 export class ImageNode extends DecoratorNode<JSX.Element> {
   __src: string;
