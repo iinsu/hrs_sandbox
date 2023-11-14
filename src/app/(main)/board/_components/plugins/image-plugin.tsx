@@ -20,11 +20,63 @@ import {
 } from "@/components/ui/lexcial/dialog";
 import Button from "@/components/ui/lexcial/button";
 import TextInput from "@/components/ui/lexcial/text-input";
+import FileInput from "@/components/ui/lexcial/file-input";
 
 export type InsertImagePlayload = Readonly<ImagePayload>;
 
 export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePlayload> =
   createCommand("INSERT_IMAGE_COMMAND");
+
+export function InsertImageUploadedDialogBody({
+  onClick,
+}: {
+  onClick: (payload: InsertImagePlayload) => void;
+}) {
+  const [src, setSrc] = useState("");
+  const [altText, setAltText] = useState("");
+
+  const isDisabled = src === "";
+
+  const loadImage = (files: FileList | null) => {
+    const reader = new FileReader();
+    reader.onload = function () {
+      if (typeof reader.result === "string") {
+        setSrc(reader.result);
+      }
+      return "";
+    };
+    if (files !== null) {
+      reader.readAsDataURL(files[0]);
+    }
+  };
+
+  return (
+    <>
+      <FileInput
+        label="Image Upload"
+        onChange={loadImage}
+        accept="image/*"
+        data-test-id="image-modal-file-upload"
+      />
+      <TextInput
+        label="Alt Text"
+        placeholder="Descriptive alternative text"
+        onChange={setAltText}
+        value={altText}
+        data-test-id="image-modal-alt-text-input"
+      />
+      <DialogActions>
+        <Button
+          data-test-id="image-modal-alt-text-input"
+          disabled={isDisabled}
+          onClick={() => onClick({ altText, src })}
+        >
+          Confirm
+        </Button>
+      </DialogActions>
+    </>
+  );
+}
 
 export function InsertImageUriDialogBody({
   onClick,
@@ -131,6 +183,7 @@ export function InsertImageDialog({
         </DialogButtonsList>
       )}
       {mode === "url" && <InsertImageUriDialogBody onClick={onClick} />}
+      {mode === "file" && <InsertImageUploadedDialogBody onClick={onClick} />}
     </>
   );
 }

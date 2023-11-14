@@ -67,7 +67,6 @@ export default function ImageComponent({
   width: "inherit" | number;
 }): JSX.Element {
   const imageRef = useRef<null | HTMLImageElement>(null);
-  console.log("height", height);
 
   return (
     <Suspense fallback={null}>
