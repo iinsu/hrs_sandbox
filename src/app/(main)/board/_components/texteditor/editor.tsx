@@ -51,7 +51,6 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
 
   const handleChange = (editorState: EditorState) => {
     editorStateRef.current = editorState;
-    console.log(editorState);
   };
 
   return (

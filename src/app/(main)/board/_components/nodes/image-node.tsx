@@ -1,15 +1,10 @@
 import * as React from "react";
 import { Suspense } from "react";
 
-import AWS from "aws-sdk";
-import S3 from "aws-sdk";
-
 import type {
-  DOMConversionMap,
   DOMConversionOutput,
   DOMExportOutput,
   EditorConfig,
-  LexicalEditor,
   LexicalNode,
   NodeKey,
   SerializedEditor,
@@ -17,7 +12,7 @@ import type {
   Spread,
 } from "lexical";
 
-import { $applyNodeReplacement, createEditor, DecoratorNode } from "lexical";
+import { $applyNodeReplacement, DecoratorNode } from "lexical";
 
 const ImageComponent = React.lazy(
   //@ts-ignore
@@ -26,14 +21,12 @@ const ImageComponent = React.lazy(
 
 export interface ImagePayload {
   altText: string;
-  caption?: LexicalEditor;
   height?: number;
   key?: NodeKey;
   maxWidth?: number;
   showCaption?: boolean;
   src: string;
   width?: number;
-  captionsEnabled?: boolean;
 }
 
 export type SerializedImageNode = Spread<
@@ -80,10 +73,6 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
   __width: "inherit" | number;
   __height: "inherit" | number;
   __maxWidth: number;
-  __showCaption: boolean;
-  __caption: LexicalEditor;
-  //Captions cannot yet be used within editor cells
-  __captionsEnabled: boolean;
 
   static getType(): string {
     return "image";
@@ -96,9 +85,6 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
       node.__maxWidth,
       node.__width,
       node.__height,
-      node.__showCaption,
-      node.__caption,
-      node.__captionsEnabled,
       node.__key
     );
   }
@@ -131,24 +117,12 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     return { element };
   }
 
-  /*   static importDOM(): DOMConversionMap | null {
-    return {
-      img: (node: Node) => ({
-        conversion: convertImageElement,
-        priority: 0,
-      }),
-    };
-  } */
-
   constructor(
     src: string,
     altText: string,
     maxWidth: number,
     width?: "inherit" | number,
     height?: "inherit" | number,
-    showCaption?: boolean,
-    caption?: LexicalEditor,
-    captionsEnabled?: boolean,
     key?: NodeKey
   ) {
     super(key);
@@ -157,9 +131,6 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     this.__maxWidth = maxWidth;
     this.__width = width || "inherit";
     this.__height = height || "inherit";
-    this.__showCaption = showCaption || false;
-    this.__caption = caption || createEditor();
-    this.__captionsEnabled = captionsEnabled || captionsEnabled === undefined;
   }
 
   exportJSON(): SerializedImageNode {
@@ -237,55 +208,12 @@ export function $createImageNode({
   altText,
   height,
   maxWidth = 500,
-  captionsEnabled,
   src,
   width,
-  showCaption,
-  caption,
   key,
 }: ImagePayload): ImageNode {
-  AWS.config.update({
-    region: process.env.NEXT_PUBLIC_AWS_REGION,
-    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS,
-    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET,
-  });
-  console.log("data uri :", URI_REGEX.test(src));
-  const name = new Date();
-  const uri = URI_REGEX.test(src);
-
-  const buffer = Buffer.from(
-    src.replace(/^data:image\/\w+;base64,/, ""),
-    "base64"
-  );
-  const type = src.split(";")[0].split("/")[1];
-
-  const bucket = new AWS.S3();
-
-  const data = {
-    Key: `front-test/${name}.${type}`,
-    Body: buffer,
-    ContentEncoding: "base64",
-    Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET!,
-    ContentType: `image/${type}`,
-  };
-
-  bucket
-    .upload(data)
-    .promise()
-    .then((res) => console.log(res.Location));
-
   return $applyNodeReplacement(
-    new ImageNode(
-      src,
-      altText,
-      maxWidth,
-      width,
-      height,
-      showCaption,
-      caption,
-      captionsEnabled,
-      key
-    )
+    new ImageNode(src, altText, maxWidth, width, height, key)
   );
 }
 
