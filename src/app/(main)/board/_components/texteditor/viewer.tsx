@@ -9,6 +9,7 @@ import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { Dispatch, SetStateAction } from "react";
 import PlaygroundNodes from "../nodes/playground-nodes";
+import ImagesPlugin from "../plugins/image-plugin";
 
 interface ViewerProps {
   text: string | undefined;
@@ -59,6 +60,7 @@ export const LexicalViewer = ({ text, setReadOnly }: ViewerProps) => {
             }
             ErrorBoundary={LexicalErrorBoundary}
           />
+          <ImagesPlugin />
         </LexicalComposer>
       </div>
       <button
