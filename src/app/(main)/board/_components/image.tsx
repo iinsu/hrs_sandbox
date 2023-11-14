@@ -22,35 +22,22 @@ function useSuspenseImage(src: string) {
 
 function LazyImage({
   altText,
-  className,
   imageRef,
   src,
-  width,
-  height,
-  maxWidth,
 }: {
   altText: string;
   className?: string | null;
-  height: "inherit" | number;
   imageRef: { current: null | HTMLImageElement };
-  maxWidth: number;
   src: string;
-  width: "inherit" | number;
 }): JSX.Element {
   useSuspenseImage(src);
   return (
     <NextImage
-      width={width === "inherit" ? 50 : width}
-      height={height === "inherit" ? 50 : height}
-      className={className || undefined}
+      fill={true}
       ref={imageRef}
       src={src}
       alt={altText}
-      style={{
-        height,
-        maxWidth,
-        width,
-      }}
+      sizes="inherit"
       draggable="false"
     />
   );
@@ -59,8 +46,8 @@ function LazyImage({
 export default function ImageComponent({
   src,
   altText,
-  width,
   height,
+  width,
   maxWidth,
 }: {
   altText: string;
@@ -70,19 +57,19 @@ export default function ImageComponent({
   width: "inherit" | number;
 }): JSX.Element {
   const imageRef = useRef<null | HTMLImageElement>(null);
+  console.log("height", height);
 
   return (
     <Suspense fallback={null}>
-      <>
-        <LazyImage
-          src={src}
-          altText={altText}
-          imageRef={imageRef}
-          width={width}
-          height={height}
-          maxWidth={maxWidth}
-        />
-      </>
+      <div
+        className="relative h-[300px]"
+        style={{
+          width,
+          maxWidth,
+        }}
+      >
+        <LazyImage src={src} altText={altText} imageRef={imageRef} />
+      </div>
     </Suspense>
   );
 }

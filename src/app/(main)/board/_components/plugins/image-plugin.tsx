@@ -14,13 +14,56 @@ import {
 } from "lexical";
 
 import { $createImageNode, ImageNode, ImagePayload } from "../nodes/image-node";
-import { DialogButtonsList } from "@/components/ui/lexcial/dialog";
+import {
+  DialogActions,
+  DialogButtonsList,
+} from "@/components/ui/lexcial/dialog";
 import Button from "@/components/ui/lexcial/button";
+import TextInput from "@/components/ui/lexcial/text-input";
 
 export type InsertImagePlayload = Readonly<ImagePayload>;
 
 export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePlayload> =
   createCommand("INSERT_IMAGE_COMMAND");
+
+export function InsertImageUriDialogBody({
+  onClick,
+}: {
+  onClick: (payload: InsertImagePlayload) => void;
+}) {
+  const [src, setSrc] = useState("");
+  const [altText, setAltText] = useState("");
+
+  const isDisalbed = src === "";
+
+  return (
+    <>
+      <TextInput
+        label="Image URL"
+        placeholder="i.e. https://source.unsplash.com/random"
+        onChange={setSrc}
+        value={src}
+        data-test-id="image-modal-url-input"
+      />
+      <TextInput
+        label="Alt Text"
+        placeholder="Random unsplash image"
+        onChange={setAltText}
+        value={altText}
+        data-test-id="image-modal-alt-text-input"
+      />
+      <DialogActions>
+        <Button
+          disabled={isDisalbed}
+          onClick={() => onClick({ altText, src })}
+          data-test-id="image-modal-confirm-btn"
+        >
+          Confirm
+        </Button>
+      </DialogActions>
+    </>
+  );
+}
 
 export function InsertImageDialog({
   activeEditor,
@@ -87,6 +130,7 @@ export function InsertImageDialog({
           </Button>
         </DialogButtonsList>
       )}
+      {mode === "url" && <InsertImageUriDialogBody onClick={onClick} />}
     </>
   );
 }

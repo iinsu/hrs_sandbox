@@ -51,15 +51,16 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
 
   const handleChange = (editorState: EditorState) => {
     editorStateRef.current = editorState;
+    console.log(editorState);
   };
 
   return (
     <>
-      <div className="bg-white relative rounded-sm shadow-sm border border-gray-200">
+      <div className="bg-white relative rounded-sm shadow-sm border border-gray-200 h-full">
         <LexicalComposer initialConfig={initialConfig}>
           <RichTextPlugin
             contentEditable={
-              <ContentEditable className="min-h-[450px] outline-none py-[15px] px-2 resize-none overflow-hidden text-ellipsis" />
+              <ContentEditable className="outline-none py-[15px] px-2 resize-none overflow-auto text-ellipsis h-[450px]" />
             }
             placeholder={
               <div className="absolute top-[15px] left-[10px] pointer-events-none select-none">
@@ -69,24 +70,25 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
             ErrorBoundary={LexicalErrorBoundary}
           />
           <Toolbar />
-          <div className="absolute right-0 bottom-[-50px] bg-slate-200 py-1 px-2 rounded-sm hover:bg-slate-500 hover:text-white">
-            <button
-              type="submit"
-              onClick={() => {
-                if (editorStateRef.current) {
-                  //console.log(JSON.stringify(editorStateRef.current));
-                  setText(JSON.stringify(editorStateRef.current));
-                  setReadOnly && setReadOnly(true);
-                }
-              }}
-            >
-              Submit
-            </button>
-          </div>
+
           <HistoryPlugin />
           <ImagesPlugin />
           <OnChangePlugin onChange={handleChange} />
         </LexicalComposer>
+      </div>
+      <div className="flex justify-end w-full  ">
+        <button
+          type="submit"
+          onClick={() => {
+            if (editorStateRef.current) {
+              setText(JSON.stringify(editorStateRef.current));
+              setReadOnly && setReadOnly(true);
+            }
+          }}
+          className="w-[100px] h-full cursor-pointer hover:bg-slate-500 hover:text-white bg-slate-200 py-1 px-2 rounded-sm mt-2 "
+        >
+          Submit
+        </button>
       </div>
     </>
   );
