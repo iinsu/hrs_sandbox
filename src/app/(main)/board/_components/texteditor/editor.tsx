@@ -84,7 +84,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
             </button>
           </div>
           <HistoryPlugin />
-          <ImagesPlugin captionsEnabled={false} />
+          <ImagesPlugin />
           <OnChangePlugin onChange={handleChange} />
         </LexicalComposer>
       </div>

@@ -2,137 +2,25 @@ import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $wrapNodeInElement, mergeRegister } from "@lexical/utils";
-import { CAN_USE_DOM } from "@/utils/canUseDOM";
+
 import {
   $createParagraphNode,
-  $createRangeSelection,
-  $getSelection,
   $insertNodes,
-  $isNodeSelection,
   $isRootOrShadowRoot,
-  $setSelection,
   COMMAND_PRIORITY_EDITOR,
-  COMMAND_PRIORITY_HIGH,
-  COMMAND_PRIORITY_LOW,
   createCommand,
-  DRAGOVER_COMMAND,
-  DRAGSTART_COMMAND,
-  DROP_COMMAND,
   LexicalCommand,
   LexicalEditor,
 } from "lexical";
 
-import {
-  $createImageNode,
-  $isImageNode,
-  ImageNode,
-  ImagePayload,
-} from "../nodes/image-node";
-import TextInput from "@/components/ui/lexcial/text-input";
-import FileInput from "@/components/ui/lexcial/file-input";
-import {
-  DialogActions,
-  DialogButtonsList,
-} from "@/components/ui/lexcial/dialog";
+import { $createImageNode, ImageNode, ImagePayload } from "../nodes/image-node";
+import { DialogButtonsList } from "@/components/ui/lexcial/dialog";
 import Button from "@/components/ui/lexcial/button";
 
 export type InsertImagePlayload = Readonly<ImagePayload>;
 
-const getDOMSelection = (targetWindow: Window | null): Selection | null =>
-  CAN_USE_DOM ? (targetWindow || window).getSelection() : null;
-
 export const INSERT_IMAGE_COMMAND: LexicalCommand<InsertImagePlayload> =
   createCommand("INSERT_IMAGE_COMMAND");
-
-export function InsertImageUriDialogBody({
-  onClick,
-}: {
-  onClick: (payload: InsertImagePlayload) => void;
-}) {
-  const [src, setSrc] = useState("");
-  const [altText, setAltText] = useState("");
-
-  const isDisabled = src === "";
-
-  return (
-    <>
-      <TextInput
-        label="Image URL"
-        placeholder="i.e. https://source.unsplash.com/random"
-        onChange={setSrc}
-        value={src}
-        data-test-id="image-modal-url-input"
-      />
-      <TextInput
-        label="Alt Text"
-        placeholder="Random unsplash image"
-        onChange={setAltText}
-        value={altText}
-        data-test-id="image-modal-alt-text-input"
-      />
-      <DialogActions>
-        <Button
-          data-test-id="image-modal-confirm-btn"
-          disabled={isDisabled}
-          onClick={() => onClick({ altText, src })}
-        >
-          Confirm
-        </Button>
-      </DialogActions>
-    </>
-  );
-}
-
-export function InsertImageUploadedDialogBody({
-  onClick,
-}: {
-  onClick: (payload: InsertImagePlayload) => void;
-}) {
-  const [src, setSrc] = useState("");
-  const [altText, setAltText] = useState("");
-
-  const isDisabled = src === "";
-
-  const loadImage = (files: FileList | null) => {
-    const reader = new FileReader();
-    reader.onload = function () {
-      if (typeof reader.result === "string") {
-        setSrc(reader.result);
-      }
-      return "";
-    };
-    if (files !== null) {
-      reader.readAsDataURL(files[0]);
-    }
-  };
-
-  return (
-    <>
-      <FileInput
-        label="Image Upload"
-        onChange={loadImage}
-        accept="image/*"
-        data-test-id="image-modal-file-upload"
-      />
-      <TextInput
-        label="Alt Text"
-        placeholder="Descriptive alternative text"
-        onChange={setAltText}
-        value={altText}
-        data-test-id="image-modal-alt-text-input"
-      />
-      <DialogActions>
-        <Button
-          disabled={isDisabled}
-          onClick={() => onClick({ altText, src })}
-          data-test-id="image-modal-file-upload-btn"
-        >
-          Confirm
-        </Button>
-      </DialogActions>
-    </>
-  );
-}
 
 export function InsertImageDialog({
   activeEditor,
@@ -196,11 +84,7 @@ export function InsertImageDialog({
   );
 }
 
-export default function ImagesPlugin({
-  captionsEnabled,
-}: {
-  captionsEnabled?: boolean;
-}): JSX.Element | null {
+export default function ImagesPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
   useEffect(() => {
     if (!editor.hasNodes([ImageNode])) {
@@ -221,7 +105,7 @@ export default function ImagesPlugin({
         COMMAND_PRIORITY_EDITOR
       )
     );
-  }, [captionsEnabled, editor]);
+  }, [editor]);
 
   return null;
 }
