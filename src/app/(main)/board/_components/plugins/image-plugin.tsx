@@ -73,6 +73,13 @@ export function InsertImageDialog({
             Sample
           </Button>
           <Button
+            data-test-id="image-modal-option-url"
+            className="mb-2"
+            onClick={() => setMode("url")}
+          >
+            URL
+          </Button>
+          <Button
             data-test-id="image-modal-option-file"
             onClick={() => setMode("file")}
           >
