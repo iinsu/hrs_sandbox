@@ -3,8 +3,6 @@
 import * as React from "react";
 import { Suspense, useRef } from "react";
 
-import NextImage from "next/image";
-
 const imageCache = new Set();
 
 function useSuspenseImage(src: string) {
@@ -22,22 +20,34 @@ function useSuspenseImage(src: string) {
 
 function LazyImage({
   altText,
+  className,
   imageRef,
   src,
+  width,
+  height,
+  maxWidth,
 }: {
   altText: string;
-  className?: string | null;
+  className: string | null;
+  height: "inherit" | number;
   imageRef: { current: null | HTMLImageElement };
+  maxWidth: number;
   src: string;
+  width: "inherit" | number;
 }): JSX.Element {
   useSuspenseImage(src);
   return (
-    <NextImage
-      fill={true}
-      ref={imageRef}
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className={className || undefined}
       src={src}
       alt={altText}
-      sizes="inherit"
+      ref={imageRef}
+      style={{
+        height,
+        maxWidth,
+        width,
+      }}
       draggable="false"
     />
   );
@@ -61,15 +71,15 @@ export default function ImageComponent({
 
   return (
     <Suspense fallback={null}>
-      <div
-        className="relative h-[300px]"
-        style={{
-          width,
-          maxWidth,
-        }}
-      >
-        <LazyImage src={src} altText={altText} imageRef={imageRef} />
-      </div>
+      <LazyImage
+        className={""}
+        src={src}
+        altText={altText}
+        imageRef={imageRef}
+        width={width}
+        height={height}
+        maxWidth={maxWidth}
+      />
     </Suspense>
   );
 }
