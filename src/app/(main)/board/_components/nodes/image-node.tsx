@@ -31,10 +31,8 @@ export interface ImagePayload {
 export type SerializedImageNode = Spread<
   {
     altText: string;
-    caption: SerializedEditor;
     height?: number;
     maxWidth: number;
-    showCaption: boolean;
     src: string;
     width?: number;
   },
@@ -64,21 +62,15 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
   }
 
   static importJSON(serializedNode: SerializedImageNode): ImageNode {
-    const { altText, height, width, maxWidth, caption, src, showCaption } =
-      serializedNode;
+    const { altText, height, width, maxWidth, src } = serializedNode;
     const node = $createImageNode({
       altText,
       height,
       maxWidth,
-      showCaption,
       src,
       width,
     });
-    const nestedEditor = node.__caption;
-    const editorState = nestedEditor.parseEditorState(caption.editorState);
-    if (!editorState.isEmpty()) {
-      nestedEditor.setEditorState(editorState);
-    }
+
     return node;
   }
 
@@ -110,10 +102,8 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
   exportJSON(): SerializedImageNode {
     return {
       altText: this.getAltText(),
-      caption: this.__caption.toJSON(),
       height: this.__height === "inherit" ? 0 : this.__height,
       maxWidth: this.__maxWidth,
-      showCaption: this.__showCaption,
       src: this.getSrc(),
       type: "image",
       version: 1,

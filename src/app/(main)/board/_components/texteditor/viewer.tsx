@@ -47,11 +47,11 @@ export const LexicalViewer = ({ text, setReadOnly }: ViewerProps) => {
 
   return (
     <>
-      <div className="bg-white relative rounded-sm shadow-sm border border-gray-200">
+      <div className="bg-white relative rounded-sm shadow-sm border border-gray-200 h-full">
         <LexicalComposer initialConfig={initialConfig}>
           <RichTextPlugin
             contentEditable={
-              <ContentEditable className="min-h-[450px] outline-none py-[15px] px-2 resize-none overflow-hidden text-ellipsis" />
+              <ContentEditable className="h-[450px] outline-none py-[15px] px-2 resize-none text-ellipsis overflow-auto" />
             }
             placeholder={
               <div className="absolute top-[15px] left-[10px] pointer-events-none select-none">
