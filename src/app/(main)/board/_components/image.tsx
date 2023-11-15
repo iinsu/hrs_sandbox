@@ -6,6 +6,7 @@ import {
   $isNodeSelection,
   CLICK_COMMAND,
   COMMAND_PRIORITY_LOW,
+  DRAGSTART_COMMAND,
   GridSelection,
   KEY_BACKSPACE_COMMAND,
   KEY_DELETE_COMMAND,
@@ -92,7 +93,6 @@ export default function ImageComponent({
   resizable: boolean;
 }): JSX.Element {
   const imageRef = useRef<null | HTMLImageElement>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const activeEditorRef = useRef<LexicalEditor | null>(null);
   const [editor] = useLexicalComposerContext();
   const [isResizing, setIsResizing] = useState<boolean>(false);
@@ -167,6 +167,19 @@ export default function ImageComponent({
         KEY_BACKSPACE_COMMAND,
         onDelete,
         COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand(
+        DRAGSTART_COMMAND,
+        (event) => {
+          if (event.target === imageRef.current) {
+            // TODO This is just a temporary workaround for FF to behave like other browsers.
+            // Ideally, this handles drag & drop too (and all browsers).
+            event.preventDefault();
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
       )
     );
 
@@ -174,7 +187,15 @@ export default function ImageComponent({
       isMounted = false;
       unregister();
     };
-  }, [editor, onClick, onDelete]);
+  }, [
+    clearSelection,
+    editor,
+    isResizing,
+    isSelected,
+    nodeKey,
+    onDelete,
+    onClick,
+  ]);
 
   const onResizeStart = () => {
     setIsResizing(true);
