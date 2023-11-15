@@ -22,6 +22,7 @@ const theme = {
   paragraph: "mb-1",
   rtl: "text-right",
   ltr: "text-left",
+  image: "editor-image",
   text: {
     bold: "font-bold",
     italic: "italic",

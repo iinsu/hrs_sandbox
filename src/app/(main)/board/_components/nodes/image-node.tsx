@@ -23,7 +23,6 @@ export interface ImagePayload {
   height?: number;
   key?: NodeKey;
   maxWidth?: number;
-  showCaption?: boolean;
   src: string;
   width?: number;
 }
@@ -120,11 +119,6 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     writable.__height = height;
   }
 
-  setShowCaption(showCaption: boolean): void {
-    const writable = this.getWritable();
-    writable.__showCaption = showCaption;
-  }
-
   // View
   createDOM(config: EditorConfig): HTMLElement {
     const span = document.createElement("span");
@@ -152,11 +146,13 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     return (
       <Suspense fallback={null}>
         <ImageComponent
+          nodeKey={this.getKey()}
           src={this.__src}
           altText={this.__altText}
           width={this.__width}
           height={this.__height}
           maxWidth={this.__maxWidth}
+          resizable={true}
         />
       </Suspense>
     );
@@ -166,7 +162,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
 export function $createImageNode({
   altText,
   height,
-  maxWidth = 500,
+  maxWidth = 1000,
   src,
   width,
   key,
