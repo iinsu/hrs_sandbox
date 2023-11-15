@@ -52,7 +52,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
 
   const handleChange = (editorState: EditorState) => {
     editorStateRef.current = editorState;
-    console.log(editorState);
+    //console.log(editorState);
   };
 
   return (
@@ -61,7 +61,9 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
         <LexicalComposer initialConfig={initialConfig}>
           <RichTextPlugin
             contentEditable={
-              <ContentEditable className="outline-none py-[15px] px-2 resize-none overflow-auto text-ellipsis h-[450px]" />
+              <div className="ContentEditable__root">
+                <ContentEditable className="outline-none py-[15px] px-2 resize-none overflow-auto text-ellipsis h-[450px]" />
+              </div>
             }
             placeholder={
               <div className="absolute top-[15px] left-[10px] pointer-events-none select-none">
@@ -71,7 +73,6 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
             ErrorBoundary={LexicalErrorBoundary}
           />
           <Toolbar />
-
           <HistoryPlugin />
           <ImagesPlugin />
           <OnChangePlugin onChange={handleChange} />

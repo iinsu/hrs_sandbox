@@ -282,10 +282,15 @@ export default function ImagesPlugin(): JSX.Element | null {
 
   return null;
 }
+let img: HTMLImageElement;
+const TRANSPARENT_IMAGE =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+if (typeof window !== "undefined") {
+  img = document.createElement("img");
+  img.src = TRANSPARENT_IMAGE;
+}
 
 function onDragStart(event: DragEvent): boolean {
-  const img = document.createElement("img");
-  console.log("Start");
   const node = getImageNodeInSelection();
   if (!node) {
     return false;
@@ -317,7 +322,6 @@ function onDragStart(event: DragEvent): boolean {
 
 function onDragOver(event: DragEvent): boolean {
   const node = getImageNodeInSelection();
-  console.log("Over");
   if (!node) {
     return false;
   }
@@ -328,10 +332,6 @@ function onDragOver(event: DragEvent): boolean {
 }
 
 function onDragEnd(event: DragEvent, editor: LexicalEditor): boolean {
-  event.preventDefault();
-
-  console.log("DROP");
-
   const node = getImageNodeInSelection();
   if (!node) {
     return false;
@@ -341,6 +341,7 @@ function onDragEnd(event: DragEvent, editor: LexicalEditor): boolean {
   if (!data) {
     return false;
   }
+  event.preventDefault();
 
   if (canDropImage(event)) {
     const range = getDragSelection(event);
@@ -389,9 +390,9 @@ declare global {
   }
 }
 
+// 이미지 드랍이 가능한지 판단하는 함수 (영역이 에디터 안쪽인지 확인)
 function canDropImage(event: DragEvent): boolean {
   const target = event.target;
-
   return !!(
     target &&
     target instanceof HTMLElement &&
