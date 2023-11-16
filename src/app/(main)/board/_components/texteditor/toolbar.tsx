@@ -23,6 +23,7 @@ import {
   ImagePlus,
   Italic,
   Redo2,
+  Sheet,
   Strikethrough,
   Underline,
   Undo2,
@@ -30,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import useModal from "@/hooks/useModal";
 import { InsertImageDialog } from "../plugins/image-plugin";
+import { InsertTableDialog } from "../plugins/table-plugin";
 
 export const Toolbar = () => {
   const [editor] = useLexicalComposerContext();
@@ -176,6 +178,19 @@ export const Toolbar = () => {
           }}
         >
           <ImagePlus className="h-5 w-5 text-white" />
+        </button>
+        <button
+          className="p-1 rounded-sm hover:bg-gray-700 transition-colors duration-100 ease-in"
+          onClick={() => {
+            showModal("Insert Table", (onClose) => (
+              <InsertTableDialog
+                activeEditor={activeEditor}
+                onClose={onClose}
+              />
+            ));
+          }}
+        >
+          <Sheet className="h-5 w-5 text-white" />
         </button>
         <span className="w-[1px] bg-gray-600 block h-full" />
         <button
