@@ -11,6 +11,7 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { Dispatch, SetStateAction, useRef } from "react";
 import ImagesPlugin from "../plugins/image-plugin";
 import PlaygroundNodes from "../nodes/playground-nodes";
+import DragDropPaste from "../plugins/drop-paste-plugin";
 
 interface TextProps {
   text?: string | undefined;
@@ -52,7 +53,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
 
   const handleChange = (editorState: EditorState) => {
     editorStateRef.current = editorState;
-    //console.log(editorState);
+    console.log(editorState);
   };
 
   return (
@@ -75,6 +76,7 @@ export const LexicalEditor = ({ text, setText, setReadOnly }: TextProps) => {
           <Toolbar />
           <HistoryPlugin />
           <ImagesPlugin />
+          <DragDropPaste />
           <OnChangePlugin onChange={handleChange} />
         </LexicalComposer>
       </div>

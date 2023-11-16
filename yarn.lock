@@ -258,7 +258,7 @@
     "@lexical/yjs" "0.12.2"
     react-error-boundary "^3.1.4"
 
-"@lexical/rich-text@0.12.2":
+"@lexical/rich-text@0.12.2", "@lexical/rich-text@^0.12.2":
   version "0.12.2"
   resolved "https://registry.yarnpkg.com/@lexical/rich-text/-/rich-text-0.12.2.tgz#9ef44e54777fc222ac8df344adb0d7428c784b25"
   integrity sha512-igsEuv7CwBOAj5c8jeE41cnx6zkhI/Bkbu4W7shT6S6lNA/3cnyZpAMlgixwyK5RoqjGRCT+IJK5l6yBxQfNkw==
