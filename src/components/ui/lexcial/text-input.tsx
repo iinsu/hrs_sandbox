@@ -20,7 +20,7 @@ export default function TextInput({
 }: Props): JSX.Element {
   return (
     <>
-      <div className="flex flex-row items-center mb-2">
+      <div className="flex flex-row items-center my-2">
         <label className="flex flex-1 text-[#666]">{label}</label>
         <input
           type={type}
@@ -30,7 +30,7 @@ export default function TextInput({
             onChange(event.target.value);
           }}
           data-test-id={dataTestId}
-          className="flex border-[#999] py-2 px-3 text-base rounded-sm min-w-0"
+          className="flex border-[#999] py-2 px-3 text-base rounded-sm min-w-0 border-solid border-[1px] mx-2"
         />
       </div>
     </>

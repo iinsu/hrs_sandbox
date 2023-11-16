@@ -111,7 +111,27 @@ export function InsertTableDialog({
 
   return (
     <>
-      <div>TODO</div>
+      <TextInput
+        label="Rows"
+        type="number"
+        data-test-id="table-modal-rows"
+        placeholder={"# of rows (1-500)"}
+        onChange={setRows}
+        value={rows}
+      />
+      <TextInput
+        label="Columns"
+        type="number"
+        data-test-id="table-modal-columns"
+        placeholder={"# of columns (1-50)"}
+        onChange={setColumns}
+        value={columns}
+      />
+      <DialogActions data-test-id="table-model-confirm-insert">
+        <Button disabled={isDisabled} onClick={onClick}>
+          Confirm
+        </Button>
+      </DialogActions>
     </>
   );
 }
