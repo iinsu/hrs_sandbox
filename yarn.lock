@@ -142,7 +142,7 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@lexical/clipboard@0.12.2":
+"@lexical/clipboard@0.12.2", "@lexical/clipboard@^0.12.2":
   version "0.12.2"
   resolved "https://registry.yarnpkg.com/@lexical/clipboard/-/clipboard-0.12.2.tgz#cfa74da178673624ecd835eb9449545885cbefc7"
   integrity sha512-RldmfZquuJJJCJ5WquCyoJ1/eZ+AnNgdksqvd+G+Yn/GyJl/+O3dnHM0QVaDSPvh/PynLFcCtz/57ySLo2kQxQ==
@@ -179,7 +179,7 @@
   dependencies:
     "@lexical/utils" "0.12.2"
 
-"@lexical/html@0.12.2":
+"@lexical/html@0.12.2", "@lexical/html@^0.12.2":
   version "0.12.2"
   resolved "https://registry.yarnpkg.com/@lexical/html/-/html-0.12.2.tgz#6df09c362688b666da0f474d132d889415dbae8a"
   integrity sha512-LWUO6OKhDtDZa9X1spHAqzsp+4EF01exis4cz5H9y2sHi7EofogXnRCadZ+fa07NVwPVTZWsStkk5qdSe/NEzg==
