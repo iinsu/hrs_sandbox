@@ -1,7 +1,12 @@
+import { Suspense } from "react";
+import { MyComponent } from "./_components/my-component";
+
 const ExamplePage = () => {
   return (
     <>
-      <div>Nex.js app with streaming example</div>
+      <Suspense fallback={<div>waiting 100.....</div>}>
+        <MyComponent wait={100} />
+      </Suspense>
     </>
   );
 };
