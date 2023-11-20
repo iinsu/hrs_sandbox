@@ -11,6 +11,11 @@ const QueryPage = () => {
         <Link href="/query/basic">
           <Button variant="link">Basic</Button>
         </Link>
+        <Link href="/query/auto">
+          <Button variant="link">
+            Auto Refetching / Poling / Realtime Example
+          </Button>
+        </Link>
       </div>
     </>
   );
