@@ -5,9 +5,6 @@ const QueryPage = () => {
   return (
     <>
       <div className="flex flex-col h-full bg-slate-100 items-center">
-        <Link href="/query/next-stream">
-          <Button variant="link">Next.js app with streaming</Button>
-        </Link>
         <Link href="/query/basic">
           <Button variant="link">Basic</Button>
         </Link>
