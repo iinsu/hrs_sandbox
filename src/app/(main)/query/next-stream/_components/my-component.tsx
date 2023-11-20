@@ -1,6 +1,6 @@
 "use client";
 
-import { useWaitQuery } from "@/hooks/query/useWaitQuery";
+import { useWaitQuery } from "@/app/(main)/query/next-stream/_hooks/useWaitQuery";
 
 export function MyComponent(props: { wait: number }) {
   const [data] = useWaitQuery(props);
