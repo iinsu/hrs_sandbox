@@ -81,7 +81,7 @@ export function AutoComponent() {
           />
         </form>
         <ul>
-          {data.map((item: string) => (
+          {data?.map((item: string) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
