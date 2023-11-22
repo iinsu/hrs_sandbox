@@ -21,8 +21,8 @@ const Posts = ({ setPostId }: PostsProps) => {
 
   return (
     <>
-      <div className="h-full overflow-y-auto">
-        <h1>Posts</h1>
+      <div className="h-[500px] overflow-auto">
+        <h1 className="text-lg">Posts</h1>
         <div>
           {status === "pending" ? (
             "Loading..."
