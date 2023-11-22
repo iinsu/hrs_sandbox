@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
@@ -32,23 +34,27 @@ export function AutoComponent() {
 
   if (status === "pending") return <h1>Loading...</h1>;
   if (status === "error") return <span>Error: {error.message}</span>;
+  if (Array.isArray(data) === false) {
+    queryClient.invalidateQueries({ queryKey: ["todos"] });
+  }
 
   return (
     <>
-      <div>
+      <div className="p-6">
         <h1>Auto Refetch with stale-time set to 1s)</h1>
-        <p>
+        <p className="w-[800px] mb-2">
           This example is best experienced on your own machine, where you can
           open multiple tabs to the same localhost server and see your changes
           propagate between the two.
         </p>
-        <label>
+        <label className="flex items-center gap-2">
           Query Interval speed (ms):{" "}
-          <input
+          <Input
             value={intervalMs}
             onChange={(ev) => setIntervalMs(Number(ev.target.value))}
             type="number"
             step="100"
+            className="w-[100px]"
           />{" "}
           <span
             style={{
@@ -73,12 +79,15 @@ export function AutoComponent() {
               },
             });
           }}
+          className="flex gap-2"
         >
-          <input
+          <Input
             placeholder="enter something"
             value={value}
             onChange={(ev) => setValue(ev.target.value)}
+            className="w-[300px]"
           />
+          <Button type="submit">Sumbit</Button>
         </form>
         <ul>
           {Array.isArray(data) &&
