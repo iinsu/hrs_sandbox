@@ -1,7 +1,9 @@
+import Link from "next/link";
+
 const FormPage = () => {
   return (
     <>
-      <div>FormPage</div>
+      <Link href="/form/shad">Shad Form Example</Link>
     </>
   );
 };
