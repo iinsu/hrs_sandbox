@@ -49,7 +49,7 @@ const OptimisticUIPage = () => {
               Updated At: {new Date(todoQuery.data.ts).toLocaleTimeString()}
             </div>
             <ul>
-              {todoQuery.data.items.map((todo) => (
+              {todoQuery?.data?.items.map((todo) => (
                 <li key={todo.id}>{todo.text}</li>
               ))}
               {addTodoMutation.isPending && (
