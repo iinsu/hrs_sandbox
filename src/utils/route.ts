@@ -1,4 +1,10 @@
-import { ArrowRightLeft, ClipboardList, Home, Sheet } from "lucide-react";
+import {
+  Archive,
+  ArrowRightLeft,
+  ClipboardList,
+  Home,
+  Sheet,
+} from "lucide-react";
 
 export const mainRoutes = [
   {
@@ -20,6 +26,11 @@ export const mainRoutes = [
     icon: ArrowRightLeft,
     label: "Query",
     href: "/query",
+  },
+  {
+    icon: Archive,
+    label: "Form",
+    href: "/form",
   },
 ];
 
