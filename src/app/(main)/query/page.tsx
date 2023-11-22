@@ -16,6 +16,9 @@ const QueryPage = () => {
         <Link href="/query/opt-ui">
           <Button variant="link">Optimistic Updates (UI)</Button>
         </Link>
+        <Link href="/query/pagination">
+          <Button variant="link">Pagination</Button>
+        </Link>
       </div>
     </>
   );
