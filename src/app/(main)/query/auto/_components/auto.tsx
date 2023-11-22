@@ -13,7 +13,7 @@ export function AutoComponent() {
     queryKey: ["todos"],
     queryFn: async () => {
       const res = await axios.get("/api/auto");
-      return res.data;
+      return res.data ?? [];
     },
 
     // Refetch the data
@@ -81,9 +81,8 @@ export function AutoComponent() {
           />
         </form>
         <ul>
-          {data?.map((item: string) => (
-            <li key={item}>{item}</li>
-          ))}
+          {Array.isArray(data) &&
+            data?.map((item: string) => <li key={item}>{item}</li>)}
         </ul>
         <div>
           <button
