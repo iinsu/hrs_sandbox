@@ -48,7 +48,7 @@ const plainTextEditorJSON = (text: string) =>
 
 const TableComponent = React.lazy(
   //@ts-ignore
-  () => import("../image")
+  () => import("../table")
 );
 
 export function createUID(): string {
@@ -269,7 +269,125 @@ export class TableNode extends DecoratorNode<JSX.Element> {
     rows[y] = rowClone;
   }
 
-  updateCellType() {}
+  updateCellType(x: number, y: number, type: "header" | "normal"): void {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const row = rows[y];
+    const cells = row.cells;
+    const cell = cells[x];
+    const cellsClone = Array.from(cells);
+    const cellClone = { ...cell, type };
+    const rowClone = { ...row, cells: cellsClone };
+    cellsClone[x] = cellClone;
+    rows[y] = rowClone;
+  }
+
+  insertColumnAt(x: number): void {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row, cells: cellsClone };
+      const type = (cells[x] || cells[x - 1]).type;
+      cellsClone.splice(x, 0, createCell(type));
+      rows[y] = rowClone;
+    }
+  }
+
+  deleteColumnAt(x: number): void {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row, cells: cellsClone };
+      cellsClone.splice(x, 1);
+      rows[y] = rowClone;
+    }
+  }
+
+  addColumns(count: number): void {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row, cells: cellsClone };
+      const type = cells[cells.length - 1].type;
+      for (let x = 0; x < count; x++) {
+        cellsClone.push(createCell(type));
+      }
+      rows[y] = rowClone;
+    }
+  }
+
+  insertRowAt(y: number): void {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const prevRow = rows[y] || rows[y - 1];
+    const cellCount = prevRow.cells.length;
+    const row = createRow();
+    for (let x = 0; x < cellCount; x++) {
+      const cell = createCell(prevRow.cells[x].type);
+      row.cells.push(cell);
+    }
+    rows.splice(y, 0, row);
+  }
+
+  deleteRowAt(y: number): void {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    rows.splice(y, 1);
+  }
+
+  addRows(count: number): void {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const prevRow = rows[rows.length - 1];
+    const cellCount = prevRow.cells.length;
+
+    for (let y = 0; y < count; y++) {
+      const row = createRow();
+      for (let x = 0; x < cellCount; x++) {
+        const cell = createCell(prevRow.cells[x].type);
+        row.cells.push(cell);
+      }
+      rows.push(row);
+    }
+  }
+
+  updateColumnWidth(x: number, width: number): void {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row, cells: cellsClone };
+      cellsClone[x].width = width;
+      rows[y] = rowClone;
+    }
+  }
+
+  decorate(_: LexicalEditor, config: EditorConfig): JSX.Element {
+    return (
+      <Suspense>
+        <TableComponent
+          nodeKey={this.__key}
+          theme={config.theme}
+          rows={this.__rows}
+        />
+      </Suspense>
+    );
+  }
+
+  isInline(): false {
+    return false;
+  }
 }
 
 export function $isTableNode(
