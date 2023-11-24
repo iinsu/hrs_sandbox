@@ -301,6 +301,127 @@ function extractCellsFromRows(
   return newRows;
 }
 
+function TableCellEditor({ cellEditor }: { cellEditor: LexicalEditor }) {
+  const { cellEditorConfig, cellEditorPlugins } = useContext(CellContext);
+
+  if (cellEditorPlugins === null || cellEditorConfig === null) {
+    return null;
+  }
+
+  return (
+    <LexicalNestedComposer
+      initialEditor={cellEditor}
+      initialTheme={cellEditorConfig.theme}
+      initialNodes={cellEditorConfig.nodes}
+      skipCollabChecks={true}
+    >
+      {cellEditorPlugins}
+    </LexicalNestedComposer>
+  );
+}
+
+function generateHTMLFromJSON(
+  editorStateJSON: string,
+  cellEditor: LexicalEditor
+): string {
+  const editorState = cellEditor.parseEditorState(editorStateJSON);
+  let html = cellHTMLCache.get(editorStateJSON);
+  if (html === undefined) {
+    html = editorState.read(() => $generateHtmlFromNodes(cellEditor, null));
+    const textContent = editorState.read(() => $getRoot().getTextContent());
+    cellHTMLCache.set(editorStateJSON, html);
+    cellTextContentCache.set(editorStateJSON, textContent);
+  }
+  return html;
+}
+
+function TableCell({
+  cell,
+  cellCoordMap,
+  cellEditor,
+  isEditing,
+  isSelected,
+  isPrimarySelected,
+  theme,
+  updateCellsByID,
+  updateTableNode,
+  rows,
+  setSortingOptions,
+  sortingOptions,
+}: {
+  cell: Cell;
+  isEditing: boolean;
+  isSelected: boolean;
+  isPrimarySelected: boolean;
+  theme: EditorThemeClasses;
+  cellEditor: LexicalEditor;
+  updateCellsByID: (ids: Array<string>, fn: () => void) => void;
+  updateTableNode: (fn2: (tableNode: TableNode) => void) => void;
+  cellCoordMap: Map<string, [number, number]>;
+  rows: Rows;
+  setSortingOptions: (options: null | SortOptions) => void;
+  sortingOptions: null | SortOptions;
+}) {
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRootRef = useRef(null);
+  const isHeader = cell.type !== "normal";
+  const editorStateJSON = cell.json;
+  const CellComponent = isHeader ? "th" : "td";
+  const cellWidth = cell.width;
+  const menuElem = menuRootRef.current;
+  const coords = cellCoordMap.get(cell.id);
+  const isSorted =
+    sortingOptions !== null &&
+    coords !== undefined &&
+    coords[0] === sortingOptions.x &&
+    coords[1] === 0;
+
+  useEffect(() => {
+    if (isEditing || !isPrimarySelected) {
+      setShowMenu(false);
+    }
+  }, [isEditing, isPrimarySelected]);
+
+  return (
+    <CellComponent
+      className={`${theme.tableCell} ${
+        isHeader
+          ? theme.tableCellHeader
+          : isSelected
+          ? theme.tableCellSelected
+          : ""
+      }`}
+      data-id={cell.id}
+      tabIndex={-1}
+      style={{ width: cellWidth !== null ? cellWidth : undefined }}
+    >
+      {isPrimarySelected && (
+        <div
+          className={`${theme.tableCellPrimarySelected} ${
+            isEditing ? theme.tableCellEditing : ""
+          }`}
+        />
+      )}
+      {isPrimarySelected && isEditing ? (
+        <TableCellEditor cellEditor={cellEditor} />
+      ) : (
+        <>
+          <div
+            dangerouslySetInnerHTML={{
+              __html:
+                editorStateJSON === ""
+                  ? createEmptyParagraphHTML(theme)
+                  : generateHTMLFromJSON(editorStateJSON, cellEditor),
+            }}
+          />
+          <div className={theme.tableCellResizer} data-table-resize="true" />
+        </>
+      )}
+      {isSorted && <div className={theme.tableCellSortedIndicator} />}
+    </CellComponent>
+  );
+}
+
 export default function TableComponent({
   nodeKey,
   rows: rawRows,
@@ -988,6 +1109,368 @@ export default function TableComponent({
         copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
       }
     };
+
+    const copyCellRange = (event: ClipboardEvent) => {
+      const lastCellID = lastCellIDRef.current;
+      if (
+        primarySelectedCellID !== null &&
+        cellEditor !== null &&
+        lastCellID !== null
+      ) {
+        const rect = getSelectedRect(
+          primarySelectedCellID,
+          lastCellID,
+          cellCoordMap
+        );
+
+        if (rect === null) {
+          return;
+        }
+
+        const dom = exportTableCellsToHTML(rows, rect);
+        const htmlString = dom.outerHTML;
+        const plainTextString = dom.outerText;
+        const tableNodeJSON = editor.getEditorState().read(() => {
+          const tableNode = $getNodeByKey(nodeKey) as TableNode;
+          return tableNode.exportJSON();
+        });
+        tableNodeJSON.rows = extractCellsFromRows(rows, rect);
+        const lexicalJSON = {
+          namespace: cellEditor._config.namespace,
+          nodes: [tableNodeJSON],
+        };
+
+        const lexicalString = JSON.stringify(lexicalJSON);
+        copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
+      }
+    };
+
+    const handlePaste = (
+      event: ClipboardEvent,
+      activeEditor: LexicalEditor
+    ) => {
+      const selection = $getSelection();
+      if (
+        primarySelectedCellID !== null &&
+        !isEditing &&
+        selection === null &&
+        activeEditor === editor
+      ) {
+        pasteContent(event);
+        mouseDownRef.current = false;
+        setSelectedCellIDs(NO_CELLS);
+        return true;
+      }
+      return false;
+    };
+
+    const handleCopy = (event: ClipboardEvent, activeEditor: LexicalEditor) => {
+      const selection = $getSelection();
+      if (
+        primarySelectedCellID !== null &&
+        !isEditing &&
+        selection === null &&
+        activeEditor === editor
+      ) {
+        if (selectedCellIDs.length === 0) {
+          copyPrimaryCell(event);
+        } else {
+          copyCellRange(event);
+        }
+        return true;
+      }
+      return false;
+    };
+
+    return mergeRegister(
+      editor.registerCommand(
+        CLICK_COMMAND,
+        (payload) => {
+          const selection = $getSelection();
+          if ($isNodeSelection(selection)) {
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<ClipboardEvent>(
+        PASTE_COMMAND,
+        handlePaste,
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<ClipboardEvent>(
+        COPY_COMMAND,
+        handleCopy,
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<ClipboardEvent>(
+        CUT_COMMAND,
+        (event: ClipboardEvent, activeEditor) => {
+          if (handleCopy(event, activeEditor)) {
+            clearCellsCommand();
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<KeyboardEvent>(
+        KEY_BACKSPACE_COMMAND,
+        clearCellsCommand,
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<KeyboardEvent>(
+        KEY_DELETE_COMMAND,
+        clearCellsCommand,
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<TextFormatType>(
+        FORMAT_TEXT_COMMAND,
+        (payload) => {
+          if (primarySelectedCellID !== null && !isEditing) {
+            $updateCells(
+              rows,
+              [primarySelectedCellID, ...selectedCellIDs],
+              cellCoordMap,
+              cellEditor,
+              updateTableNode,
+              () => {
+                const sel = $createSelectAll();
+                sel.formatText(payload);
+              }
+            );
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<KeyboardEvent>(
+        KEY_ENTER_COMMAND,
+        (event, targetEditor) => {
+          const selection = $getSelection();
+          if (
+            primarySelectedCellID === null &&
+            !isEditing &&
+            $isNodeSelection(selection) &&
+            selection.has(nodeKey) &&
+            selection.getNodes().length === 1 &&
+            targetEditor === editor
+          ) {
+            const firstCellID = rows[0].cells[0].id;
+            setPrimarySelectedCellID(firstCellID);
+            event.preventDefault();
+            event.stopPropagation();
+            clearSelection();
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<KeyboardEvent>(
+        KEY_TAB_COMMAND,
+        (event) => {
+          const selection = $getSelection();
+          if (
+            !isEditing &&
+            selection === null &&
+            primarySelectedCellID !== null
+          ) {
+            const isBackward = event.shiftKey;
+            const [x, y] = cellCoordMap.get(primarySelectedCellID) as [
+              number,
+              number
+            ];
+            event.preventDefault();
+            let nextX = null;
+            let nextY = null;
+            if (x === 0 && isBackward) {
+              if (y !== 0) {
+                nextY = y - 1;
+                nextX = rows[nextY].cells.length - 1;
+              }
+            } else if (x === rows[y].cells.length - 1 && !isBackward) {
+              if (y !== rows.length - 1) {
+                nextY = y + 1;
+                nextX = 0;
+              }
+            } else if (!isBackward) {
+              nextX = x + 1;
+              nextY = y;
+            }
+            if (nextX !== null && nextY !== null) {
+              modifySelectedCells(nextX, nextY, false);
+              return true;
+            }
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<KeyboardEvent>(
+        KEY_ARROW_UP_COMMAND,
+        (event, targetEditor) => {
+          const selection = $getSelection();
+          if (!isEditing && selection === null) {
+            const extend = event.shiftKey;
+            const cellID = extend
+              ? lastCellIDRef.current || primarySelectedCellID
+              : primarySelectedCellID;
+            if (cellID !== null) {
+              const [x, y] = cellCoordMap.get(cellID) as [number, number];
+              if (y !== 0) {
+                modifySelectedCells(x, y - 1, extend);
+                return true;
+              }
+            }
+          }
+          if (!$isRangeSelection(selection) || targetEditor !== cellEditor) {
+            return false;
+          }
+          if (
+            selection.isCollapsed() &&
+            selection.anchor
+              .getNode()
+              .getTopLevelElementOrThrow()
+              .getPreviousSibling() === null
+          ) {
+            event.preventDefault();
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand(
+        KEY_ARROW_DOWN_COMMAND,
+        (event, targetEditor) => {
+          const selection = $getSelection();
+          if (!isEditing && selection === null) {
+            const extend = event.shiftKey;
+            const cellID = extend
+              ? lastCellIDRef.current || primarySelectedCellID
+              : primarySelectedCellID;
+
+            if (cellID !== null) {
+              const [x, y] = cellCoordMap.get(cellID) as [number, number];
+              if (y !== rows.length - 1) {
+                modifySelectedCells(x, y + 1, extend);
+                return true;
+              }
+            }
+          }
+          if (!$isRangeSelection(selection) || targetEditor !== cellEditor) {
+            return false;
+          }
+          if (
+            selection.isCollapsed() &&
+            selection.anchor
+              .getNode()
+              .getTopLevelElementOrThrow()
+              .getNextSibling() === null
+          ) {
+            event.preventDefault();
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<KeyboardEvent>(
+        KEY_ARROW_LEFT_COMMAND,
+        (event, targetEditor) => {
+          const selection = $getSelection();
+          if (!isEditing && selection === null) {
+            const extend = event.shiftKey;
+            const cellID = extend
+              ? lastCellIDRef.current || primarySelectedCellID
+              : primarySelectedCellID;
+            if (cellID !== null) {
+              const [x, y] = cellCoordMap.get(cellID) as [number, number];
+              if (x !== 0) {
+                modifySelectedCells(x - 1, y, extend);
+                return true;
+              }
+            }
+          }
+
+          if (!$isRangeSelection(selection) || targetEditor !== cellEditor) {
+            return false;
+          }
+          if (selection.isCollapsed() && selection.anchor.offset === 0) {
+            event.preventDefault();
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<KeyboardEvent>(
+        KEY_ARROW_RIGHT_COMMAND,
+        (event, targetEditor) => {
+          const selection = $getSelection();
+          if (!isEditing && selection === null) {
+            const extend = event.shiftKey;
+            const cellID = extend
+              ? lastCellIDRef.current || primarySelectedCellID
+              : primarySelectedCellID;
+            if (cellID !== null) {
+              const [x, y] = cellCoordMap.get(cellID) as [number, number];
+              if (x !== rows[y].cells.length - 1) {
+                modifySelectedCells(x + 1, y, extend);
+                return true;
+              }
+            }
+          }
+          if (!$isRangeSelection(selection) || targetEditor !== cellEditor) {
+            return false;
+          }
+          if (selection.isCollapsed()) {
+            const anchor = selection.anchor;
+            if (
+              (anchor.type === "text" &&
+                anchor.offset === anchor.getNode().getTextContentSize()) ||
+              (anchor.type === "element" &&
+                anchor.offset === anchor.getNode().getChildrenSize())
+            ) {
+              event.preventDefault();
+              return true;
+            }
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      ),
+      editor.registerCommand<KeyboardEvent>(
+        KEY_ESCAPE_COMMAND,
+        (event, targetEditor) => {
+          const selection = $getSelection();
+          if (!isEditing && selection === null && targetEditor === editor) {
+            setSelected(true);
+            setPrimarySelectedCellID(null);
+            selectTable();
+            return true;
+          }
+          if (!$isRangeSelection(selection)) {
+            return false;
+          }
+          if (isEditing) {
+            saveEditorToJSON();
+            setIsEditing(false);
+            if (primarySelectedCellID !== null) {
+              setTimeout(() => {
+                focusCell(tableElem, primarySelectedCellID);
+              }, 20);
+            }
+            return true;
+          }
+          return false;
+        },
+        COMMAND_PRIORITY_LOW
+      )
+    );
   }, [
     cellCoordMap,
     cellEditor,
@@ -1007,8 +1490,57 @@ export default function TableComponent({
   ]);
 
   return (
-    <>
-      <div>TODO</div>
-    </>
+    <div
+      style={{
+        position: "relative",
+        width: (tableRef.current?.offsetWidth || 0) + "px",
+      }}
+    >
+      <table
+        className={`${theme.table} ${isSelected ? theme.tableSeleted : ""}`}
+        ref={tableRef}
+        tabIndex={-1}
+      >
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id} className={theme.tableRow}>
+              {row.cells.map((cell) => {
+                const { id } = cell;
+                return (
+                  <TableCell
+                    key={id}
+                    cell={cell}
+                    theme={theme}
+                    isSelected={selectedCellSet.has(id)}
+                    isPrimarySelected={primarySelectedCellID === id}
+                    isEditing={isEditing}
+                    sortingOptions={sortingOptions}
+                    cellEditor={cellEditor!}
+                    updateCellsByID={updateCellsByID}
+                    updateTableNode={updateTableNode}
+                    cellCoordMap={cellCoordMap}
+                    rows={rows}
+                    setSortingOptions={setSortingOptions}
+                  />
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {showAddColumns && (
+        <button className={theme.tableAddColumns} onClick={addColumns} />
+      )}
+      {showAddRows && (
+        <button
+          className={theme.tableAddRows}
+          onClick={addRows}
+          ref={addRowsRef}
+        />
+      )}
+      {resizingID !== null && (
+        <div className={theme.tableResizeRuler} ref={tableResizerRulerRef} />
+      )}
+    </div>
   );
 }

@@ -10,6 +10,9 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
+import { TablePlugin as NewTablePlugin } from "./_components/plugins/table-plugin";
+import { useSettings } from "./_components/context/settings";
+import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
 
 const theme = {
   ltr: "ltr",
@@ -38,6 +41,9 @@ function onError(error: Error) {
 
 const BoardMainPage = () => {
   const [editorState, setEditorState] = useState();
+  const {
+    settings: { tableCellMerge, tableCellBackgroundColor },
+  } = useSettings();
 
   const initaialConfig = {
     namespace: "MyEditor",
@@ -75,6 +81,10 @@ const BoardMainPage = () => {
         />
         <HistoryPlugin />
         <MyCustomAutoFocusPlugin />
+        <TablePlugin
+          hasCellMerge={tableCellMerge}
+          hasCellBackgroundColor={tableCellBackgroundColor}
+        />
         <OnChangePlugin onChange={onChange} />
       </LexicalComposer>
     </div>

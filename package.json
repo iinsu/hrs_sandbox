@@ -14,6 +14,7 @@
     "@lexical/html": "^0.12.2",
     "@lexical/react": "^0.12.2",
     "@lexical/rich-text": "^0.12.2",
+    "@lexical/table": "^0.12.4",
     "@lexical/utils": "^0.12.2",
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-separator": "^1.0.3",
