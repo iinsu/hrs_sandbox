@@ -116,6 +116,7 @@ function getSelectedRect(
     startY,
   };
 }
+
 function getSelectedIDs(
   rows: Rows,
   startID: string,
@@ -136,6 +137,142 @@ function getSelectedIDs(
     }
   }
   return ids;
+}
+
+function isCopy(
+  keyCode: string,
+  shiftKey: boolean,
+  metaKey: boolean,
+  ctrlKey: boolean
+): boolean {
+  if (shiftKey) {
+    return false;
+  }
+  if (keyCode === "c") {
+    return IS_APPLE ? metaKey : ctrlKey;
+  }
+
+  return false;
+}
+
+function isCut(
+  keyCode: string,
+  shiftKey: boolean,
+  metaKey: boolean,
+  ctrlKey: boolean
+): boolean {
+  if (shiftKey) {
+    return false;
+  }
+  if (keyCode === "x") {
+    return IS_APPLE ? metaKey : ctrlKey;
+  }
+
+  return false;
+}
+
+function isPaste(
+  keyCode: string,
+  shiftKey: boolean,
+  metaKey: boolean,
+  ctrlKey: boolean
+): boolean {
+  if (shiftKey) {
+    return false;
+  }
+  if (keyCode === "v") {
+    return IS_APPLE ? metaKey : ctrlKey;
+  }
+
+  return false;
+}
+
+function getCurrentDocument(editor: LexicalEditor): Document {
+  const rootElement = editor.getRootElement();
+  return rootElement !== null ? rootElement.ownerDocument : document;
+}
+
+function getCellID(domElement: HTMLElement): null | string {
+  let node: null | HTMLElement = domElement;
+  while (node !== null) {
+    const possibleID = node.getAttribute("data-id");
+    if (possibleID != null) {
+      return possibleID;
+    }
+    node = node.parentElement;
+  }
+  return null;
+}
+
+function isStartingResize(target: HTMLElement): boolean {
+  return target.nodeType === 1 && target.hasAttribute("data-table-resize");
+}
+
+function getTableCellWidth(domElement: HTMLElement): number {
+  let node: null | HTMLElement = domElement;
+  while (node !== null) {
+    if (node.nodeName === "TH" || node.nodeName === "TD") {
+      return node.getBoundingClientRect().width;
+    }
+    node = node.parentElement;
+  }
+  return 0;
+}
+
+function isTargetOnPossibleUIControl(target: HTMLElement): boolean {
+  let node: HTMLElement | null = target;
+  while (node !== null) {
+    const nodeName = node.nodeName;
+    if (
+      nodeName === "BUTTON" ||
+      nodeName === "INPUT" ||
+      nodeName === "TEXTAREA"
+    ) {
+      return true;
+    }
+    node = node.parentElement;
+  }
+  return false;
+}
+
+function getCell(
+  rows: Rows,
+  cellID: string,
+  cellCoordMap: Map<string, [number, number]>
+): null | Cell {
+  const coords = cellCoordMap.get(cellID);
+  if (coords === undefined) {
+    return null;
+  }
+  const [x, y] = coords;
+  const row = rows[y];
+  return row.cells[x];
+}
+
+function $updateCells(
+  rows: Rows,
+  ids: Array<string>,
+  cellCoordMap: Map<string, [number, number]>,
+  cellEditor: null | LexicalEditor,
+  updateTableNode: (fn2: (tableNode: TableNode) => void) => void,
+  fn: () => void
+): void {
+  for (const id of ids) {
+    const cell = getCell(rows, id, cellCoordMap);
+    if (cell !== null && cellEditor !== null) {
+      const editorState = cellEditor.parseEditorState(cell.json);
+      cellEditor._headless = true;
+      cellEditor.setEditorState(editorState);
+      cellEditor.update(fn, { discrete: true });
+      cellEditor._headless = false;
+      const newJSON = JSON.stringify(cellEditor.getEditorState());
+      updateTableNode((tableNode) => {
+        const [x, y] = cellCoordMap.get(id) as [number, number];
+        $addUpdateTag("history-push");
+        tableNode.updateCellJSON(x, y, newJSON);
+      });
+    }
+  }
 }
 
 function extractCellsFromRows(
@@ -251,7 +388,7 @@ export default function TableComponent({
     return _cellEditor;
   }, [cellEditorConfig]);
 
-  const [selectedCellIDs, SetSelectedCellIDs] = useState<Array<string>>([]);
+  const [selectedCellIDs, setSelectedCellIDs] = useState<Array<string>>([]);
 
   const selectedCellSet = useMemo<Set<string>>(
     () => new Set(selectedCellIDs),
@@ -306,10 +443,10 @@ export default function TableComponent({
           id,
           cellCoordMap
         );
-        SetSelectedCellIDs(selectedIDs);
+        setSelectedCellIDs(selectedIDs);
       } else {
         setPrimarySelectedCellID(id);
-        SetSelectedCellIDs(NO_CELLS);
+        setSelectedCellIDs(NO_CELLS);
         focusCell(tableRef.current as HTMLElement, id);
       }
     },
@@ -343,7 +480,531 @@ export default function TableComponent({
 
   useEffect(() => {
     const tableElem = tableRef.current;
-  }, []);
+    if (tableElem === null) {
+      return;
+    }
+    const doc = getCurrentDocument(editor);
+
+    const isAtEdgeOfTable = (event: PointerEvent) => {
+      const x = event.clientX - tableRect.x;
+      const y = event.clientY - tableRect.y;
+      return x < 5 || y < 5;
+    };
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const possibleID = getCellID(event.target as HTMLElement);
+      if (
+        possibleID !== null &&
+        editor.isEditable() &&
+        tableElem.contains(event.target as HTMLElement)
+      ) {
+        if (isAtEdgeOfTable(event)) {
+          setSelected(true);
+          setPrimarySelectedCellID(null);
+          selectTable();
+          return;
+        }
+        setSelected(false);
+        if (isStartingResize(event.target as HTMLElement)) {
+          setResizingID(possibleID);
+          tableElem.style.userSelect = "none";
+          resizeMeasureRef.current = {
+            point: event.clientX,
+            size: getTableCellWidth(event.target as HTMLElement),
+          };
+          return;
+        }
+
+        mouseDownRef.current = true;
+        if (primarySelectedCellID !== possibleID) {
+          if (isEditing) {
+            saveEditorToJSON();
+          }
+          setPrimarySelectedCellID(possibleID);
+          setIsEditing(false);
+          lastCellIDRef.current = possibleID;
+        } else {
+          lastCellIDRef.current = null;
+        }
+        setSelectedCellIDs(NO_CELLS);
+      } else if (
+        primarySelectedCellID !== null &&
+        !isTargetOnPossibleUIControl(event.target as HTMLElement)
+      ) {
+        setSelected(false);
+        mouseDownRef.current = false;
+        if (isEditing) {
+          saveEditorToJSON();
+        }
+        setPrimarySelectedCellID(null);
+        setSelectedCellIDs(NO_CELLS);
+        setIsEditing(false);
+        lastCellIDRef.current = null;
+      }
+    };
+
+    const tableRect = tableElem.getBoundingClientRect();
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (resizingID !== null) {
+        const tableResizerRulerElem = tableResizerRulerRef.current;
+        if (tableResizerRulerElem !== null) {
+          const { size, point } = resizeMeasureRef.current;
+          const diff = event.clientX - point;
+          const newWidth = size + diff;
+          let x = event.clientX - tableRect.x;
+          if (x < 10) {
+            x = 10;
+          } else if (x > tableRect.width - 10) {
+            x = tableRect.width - 10;
+          } else if (newWidth < 20) {
+            x = point - size + 20 - tableRect.x;
+          }
+          tableResizerRulerElem.style.left = `${x}px`;
+        }
+        return;
+      }
+
+      if (!isEditing) {
+        const { clientX, clientY } = event;
+        const { width, x, y, height } = tableRect;
+        const isOnRightEdge =
+          clientX > x + width * 0.9 &&
+          clientX < x + width + 40 &&
+          !mouseDownRef.current;
+        setShowAddColumns(isOnRightEdge);
+        const isOnBottomEdge =
+          event.target === addRowsRef.current ||
+          (clientY > y + height * 0.85 &&
+            clientY < y + height + 5 &&
+            !mouseDownRef.current);
+        setShowAddRows(isOnBottomEdge);
+      }
+      if (
+        isEditing ||
+        !mouseDownRef.current ||
+        primarySelectedCellID === null
+      ) {
+        return;
+      }
+
+      const possibleID = getCellID(event.target as HTMLElement);
+      if (possibleID !== null && possibleID !== lastCellIDRef.current) {
+        if (selectedCellIDs.length === 0) {
+          tableElem.style.userSelect = "none";
+        }
+
+        const selectedIDs = getSelectedIDs(
+          rows,
+          primarySelectedCellID,
+          possibleID,
+          cellCoordMap
+        );
+
+        if (selectedIDs.length === 1) {
+          setSelectedCellIDs(NO_CELLS);
+        } else {
+          setSelectedCellIDs(selectedIDs);
+        }
+        lastCellIDRef.current = possibleID;
+      }
+    };
+
+    const handlePointerUp = (event: PointerEvent) => {
+      if (resizingID !== null) {
+        const { size, point } = resizeMeasureRef.current;
+        const diff = event.clientX - point;
+        let newWidth = size + diff;
+        if (newWidth < 10) {
+          newWidth = 10;
+        }
+        updateTableNode((tableNode) => {
+          const [x] = cellCoordMap.get(resizingID) as [number, number];
+          $addUpdateTag("history-push");
+          tableNode.updateColumnWidth(x, newWidth);
+        });
+        setResizingID(null);
+      }
+      if (
+        tableElem !== null &&
+        selectedCellIDs.length > 1 &&
+        mouseDownRef.current
+      ) {
+        tableElem.style.userSelect = "text";
+        window.getSelection()?.removeAllRanges();
+      }
+      mouseDownRef.current = false;
+    };
+
+    doc.addEventListener("pointerdown", handlePointerDown);
+    doc.addEventListener("pointermove", handlePointerMove);
+    doc.addEventListener("pointerup", handlePointerUp);
+    return () => {
+      doc.removeEventListener("pointerdown", handlePointerDown);
+      doc.removeEventListener("pointermove", handlePointerMove);
+      doc.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [
+    cellEditor,
+    editor,
+    isEditing,
+    rows,
+    saveEditorToJSON,
+    primarySelectedCellID,
+    selectedCellSet,
+    selectedCellIDs,
+    cellCoordMap,
+    resizingID,
+    updateTableNode,
+    setSelected,
+    selectTable,
+  ]);
+
+  // 더블 클릭 & 키보드 이벤트
+  useEffect(() => {
+    if (!isEditing && primarySelectedCellID !== null) {
+      const doc = getCurrentDocument(editor);
+
+      const loadContentIntoCell = (cell: Cell | null) => {
+        if (cell !== null && cellEditor !== null) {
+          const editorStateJSON = cell.json;
+          const editorState = cellEditor.parseEditorState(editorStateJSON);
+          cellEditor.setEditorState(editorState);
+        }
+      };
+
+      const handleDblClick = (event: MouseEvent) => {
+        const possibleID = getCellID(event.target as HTMLElement);
+        if (possibleID === primarySelectedCellID && editor.isEditable()) {
+          const cell = getCell(rows, possibleID, cellCoordMap);
+          loadContentIntoCell(cell);
+          setIsEditing(true);
+          setSelectedCellIDs(NO_CELLS);
+        }
+      };
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        // Ignore arrow keys, escape or tab
+        const keyCode = event.key;
+        if (
+          keyCode === "Shift" ||
+          "Escape" ||
+          "Tab" ||
+          "ArrowLeft" ||
+          "ArrowUp" ||
+          "ArrowRight" ||
+          "ArrowDown" ||
+          "Backspace" ||
+          "Delete" ||
+          !editor.isEditable()
+        ) {
+          return;
+        }
+        if (keyCode === "Enter") {
+          event.preventDefault();
+        }
+
+        if (
+          !isEditing &&
+          primarySelectedCellID !== null &&
+          editor.getEditorState().read(() => $getSelection() === null) &&
+          (event.target as HTMLElement).contentEditable !== "true"
+        ) {
+          if (isCopy(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
+            editor.dispatchCommand(COPY_COMMAND, event);
+            return;
+          }
+          if (isCut(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
+            editor.dispatchCommand(CUT_COMMAND, event);
+            return;
+          }
+          if (isPaste(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
+            editor.dispatchCommand(PASTE_COMMAND, event);
+            return;
+          }
+        }
+
+        if (event.metaKey || event.ctrlKey || event.altKey) {
+          return;
+        }
+
+        const cell = getCell(rows, primarySelectedCellID, cellCoordMap);
+        loadContentIntoCell(cell);
+        setIsEditing(true);
+        setSelectedCellIDs(NO_CELLS);
+      };
+
+      doc.addEventListener("dblclick", handleDblClick);
+      doc.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        doc.removeEventListener("dblclick", handleDblClick);
+        doc.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [
+    cellEditor,
+    editor,
+    isEditing,
+    rows,
+    primarySelectedCellID,
+    cellCoordMap,
+  ]);
+
+  const updateCellsByID = useCallback(
+    (ids: Array<string>, fn: () => void) => {
+      $updateCells(rows, ids, cellCoordMap, cellEditor, updateTableNode, fn);
+    },
+    [cellCoordMap, cellEditor, rows, updateTableNode]
+  );
+
+  const clearCellsCommand = useCallback((): boolean => {
+    if (primarySelectedCellID !== null && !isEditing) {
+      updateCellsByID([primarySelectedCellID, ...selectedCellIDs], () => {
+        const root = $getRoot();
+        root.clear();
+        root.append($createParagraphNode());
+      });
+      return true;
+    } else if (isSelected) {
+      updateTableNode((tableNode) => {
+        $addUpdateTag("history-push");
+        tableNode.selectNext();
+        tableNode.remove();
+      });
+    }
+    return false;
+  }, [
+    isEditing,
+    isSelected,
+    primarySelectedCellID,
+    selectedCellIDs,
+    updateCellsByID,
+    updateTableNode,
+  ]);
+
+  useEffect(() => {
+    const tableElem = tableRef.current;
+    if (tableElem === null) {
+      return;
+    }
+
+    const copyDataToClipboard = (
+      event: ClipboardEvent,
+      htmlString: string,
+      lexicalString: string,
+      plainTextString: string
+    ) => {
+      const clipboardData =
+        event instanceof KeyboardEvent ? null : event.clipboardData;
+      event.preventDefault();
+
+      if (clipboardData !== null) {
+        clipboardData.setData("text/html", htmlString);
+        clipboardData.setData("text/plain", plainTextString);
+        clipboardData.setData("application/x-lexical-editor", lexicalString);
+      } else {
+        const clipboard = navigator.clipboard;
+        if (clipboard != null) {
+          // Most browsers only support a single item in the clipboard at one time.
+          // So we optimize by only putting in HTML.
+          const data = [
+            new ClipboardItem({
+              "text/html": new Blob([htmlString as BlobPart], {
+                type: "text/html",
+              }),
+            }),
+          ];
+          clipboard.write(data);
+        }
+      }
+    };
+
+    const getTypeFromObject = async (
+      clipboardData: DataTransfer | ClipboardItem,
+      type: string
+    ): Promise<string> => {
+      try {
+        return clipboardData instanceof DataTransfer
+          ? clipboardData.getData(type)
+          : clipboardData instanceof ClipboardItem
+          ? await (await clipboardData.getType(type)).text()
+          : "";
+      } catch {
+        return "";
+      }
+    };
+
+    const pasteContent = async (event: ClipboardEvent) => {
+      let clipboardData: null | DataTransfer | ClipboardItem =
+        (event instanceof InputEvent ? null : event.clipboardData) || null;
+
+      if (primarySelectedCellID !== null && cellEditor !== null) {
+        event.preventDefault();
+      }
+
+      if (clipboardData === null) {
+        try {
+          const items = await navigator.clipboard.read();
+          clipboardData = items[0];
+        } catch {
+          // NO-OP
+        }
+      }
+
+      const lexicalString =
+        clipboardData !== null
+          ? await getTypeFromObject(
+              clipboardData,
+              "application/x-lexical-editor"
+            )
+          : "";
+
+      if (lexicalString) {
+        try {
+          const payload = JSON.parse(lexicalString);
+          if (
+            payload.namespace === editor._config.namespace &&
+            Array.isArray(payload.nodes)
+          ) {
+            $updateCells(
+              rows,
+              [primarySelectedCellID!],
+              cellCoordMap,
+              cellEditor,
+              updateTableNode,
+              () => {
+                const root = $getRoot();
+                root.clear();
+                root.append($createParagraphNode());
+                root.selectend();
+                const nodes = $generateNodesFromSerializedNodes(payload.nodes);
+                const sel = $getSelection();
+                if ($isRangeSelection(sel)) {
+                  $insertGeneratedNodes(cellEditor!, nodes, sel);
+                }
+              }
+            );
+            return;
+          }
+          // eslint-diable-next-line no-empty
+        } catch {}
+      }
+
+      const htmlString =
+        clipboardData !== null
+          ? await getTypeFromObject(clipboardData, "text/html")
+          : "";
+
+      if (htmlString) {
+        try {
+          const parser = new DOMParser();
+          const dom = parser.parseFromString(htmlString, "text/html");
+          const possibleTableElement = dom.querySelector("table");
+
+          if (possibleTableElement != null) {
+            const pasteRows = extractRowsFromHTML(possibleTableElement);
+            updateTableNode((tableNode) => {
+              const [x, y] = cellCoordMap.get(primarySelectedCellID) as [
+                number,
+                number
+              ];
+              $addUpdateTag("history-push");
+              tableNode.mergeRows(x, y, pasteRows);
+            });
+            return;
+          }
+
+          $updateCells(
+            rows,
+            [primarySelectedCellID!],
+            cellCoordMap,
+            cellEditor,
+            updateTableNode,
+            () => {
+              const root = $getRoot();
+              root.clear();
+              root.append($createParagraphNode());
+              root.selectEnd();
+              const nodes = $generateNodesFromDOM(editor, dom);
+              const sel = $getSelection();
+              if ($isRangeSelection(sel)) {
+                $insertGeneratedNodes(cellEditor!, nodes, sel);
+              }
+            }
+          );
+          return;
+          // eslint-disalbe-next-line no-empty
+        } catch {}
+      }
+
+      // Multi-line plain text in rich text mode paste as separate paragraphs
+      // instead of single paragraph with linebreaks;
+      const text =
+        clipboardData !== null
+          ? await getTypeFromObject(clipboardData, "text/plain")
+          : "";
+
+      if (text != null) {
+        $updateCells(
+          rows,
+          [primarySelectedCellID!],
+          cellCoordMap,
+          cellEditor,
+          updateTableNode,
+          () => {
+            const root = $getRoot();
+            root.clear();
+            root.selectEnd();
+            const sel = $getSelection();
+            if (sel !== null) {
+              sel.insertRawText(text);
+            }
+          }
+        );
+      }
+    };
+
+    const copyPrimaryCell = (event: ClipboardEvent) => {
+      if (primarySelectedCellID !== null && cellEditor !== null) {
+        const cell = getCell(rows, primarySelectedCellID, cellCoordMap) as Cell;
+        const json = cell.json;
+        const htmlString = cellHTMLCache.get(json) || null;
+        if (htmlString === null) {
+          return;
+        }
+
+        const editorState = cellEditor.parseEditorState(json);
+        const plainTextString = editorState.read(() =>
+          $getRoot().getTextContent()
+        );
+
+        const lexicalString = editorState.read(() => {
+          return JSON.stringify(
+            $generateJSONFromSelectedNodes(cellEditor, null)
+          );
+        });
+
+        copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
+      }
+    };
+  }, [
+    cellCoordMap,
+    cellEditor,
+    clearCellsCommand,
+    clearSelection,
+    editor,
+    isEditing,
+    modifySelectedCells,
+    nodeKey,
+    primarySelectedCellID,
+    rows,
+    saveEditorToJSON,
+    selectTable,
+    selectedCellIDs,
+    setSelected,
+    updateTableNode,
+  ]);
 
   return (
     <>
