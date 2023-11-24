@@ -32,6 +32,13 @@ import { cn } from "@/lib/utils";
 import useModal from "@/hooks/useModal";
 import { InsertImageDialog } from "../plugins/image-plugin";
 import { InsertTableDialog } from "../plugins/table-plugin";
+import { $isTableNode } from "@lexical/table";
+import { getSelectedNode } from "@/utils/getSelectedNode";
+
+const rootTypeToRootName = {
+  root: "Root",
+  table: "Table",
+};
 
 export const Toolbar = () => {
   const [editor] = useLexicalComposerContext();
@@ -41,6 +48,9 @@ export const Toolbar = () => {
   const [isUnderline, setIsUnderline] = useState(false);
   const [activeEditor, setActiveEditor] = useState(editor);
   const [modal, showModal] = useModal();
+
+  const [rootType, setRootType] =
+    useState<keyof typeof rootTypeToRootName>("root");
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -66,6 +76,15 @@ export const Toolbar = () => {
       setIsItalic(selection.hasFormat("italic"));
       setIsStrikethrough(selection.hasFormat("strikethrough"));
       setIsUnderline(selection.hasFormat("underline"));
+
+      const node = getSelectedNode(selection);
+
+      const tableNode = $findMatchingParent(node, $isTableNode);
+      if ($isTableNode(tableNode)) {
+        setRootType("table");
+      } else {
+        setRootType("root");
+      }
     }
   }, [activeEditor]);
 
