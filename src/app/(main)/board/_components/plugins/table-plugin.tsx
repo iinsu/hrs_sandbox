@@ -91,9 +91,12 @@ interface DialogProps {
 export function InsertTableDialog({
   activeEditor,
   onClose,
-}: DialogProps): JSX.Element {
-  const [rows, setRows] = useState("2");
-  const [columns, setColumns] = useState("2");
+}: {
+  activeEditor: LexicalEditor;
+  onClose: () => void;
+}): JSX.Element {
+  const [rows, setRows] = useState("5");
+  const [columns, setColumns] = useState("5");
   const [isDisabled, setIsDisabled] = useState(true);
 
   useEffect(() => {
@@ -107,27 +110,31 @@ export function InsertTableDialog({
   }, [rows, columns]);
 
   const onClick = () => {
-    activeEditor.dispatchCommand(INSERT_TABLE_COMMAND, { columns, rows });
+    activeEditor.dispatchCommand(INSERT_TABLE_COMMAND, {
+      columns,
+      rows,
+    });
+
     onClose();
   };
 
   return (
     <>
       <TextInput
+        placeholder={"# of rows (1-500)"}
         label="Rows"
-        type="number"
-        data-test-id="table-modal-rows"
-        placeholder={"# of rows (1-50)"}
         onChange={setRows}
         value={rows}
+        data-test-id="table-modal-rows"
+        type="number"
       />
       <TextInput
-        label="Columns"
-        type="number"
-        data-test-id="table-modal-columns"
         placeholder={"# of columns (1-50)"}
+        label="Columns"
         onChange={setColumns}
         value={columns}
+        data-test-id="table-modal-columns"
+        type="number"
       />
       <DialogActions data-test-id="table-model-confirm-insert">
         <Button disabled={isDisabled} onClick={onClick}>

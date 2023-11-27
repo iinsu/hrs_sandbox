@@ -6,7 +6,7 @@ import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { Toolbar } from "./toolbar";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { EditorState } from "lexical";
+import { EditorState, EditorThemeClasses } from "lexical";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { Dispatch, SetStateAction, useRef } from "react";
 import ImagesPlugin from "../plugins/image-plugin";
@@ -20,7 +20,7 @@ interface TextProps {
   setReadOnly?: Dispatch<SetStateAction<boolean>>;
 }
 
-const theme = {
+const theme: EditorThemeClasses = {
   paragraph: "mb-1",
   rtl: "text-right",
   ltr: "text-left",
@@ -31,6 +31,22 @@ const theme = {
     underline: "underline",
     strikethrough: "line-through",
   },
+  table: "PlaygroundEditorTheme__table",
+  tableAddColumns: "PlaygroundEditorTheme__tableAddColumns",
+  tableAddRows: "PlaygroundEditorTheme__tableAddRows",
+  tableCell: "PlaygroundEditorTheme__tableCell",
+  tableCellActionButton: "PlaygroundEditorTheme__tableCellActionButton",
+  tableCellActionButtonContainer:
+    "PlaygroundEditorTheme__tableCellActionButtonContainer",
+  tableCellEditing: "PlaygroundEditorTheme__tableCellEditing",
+  tableCellHeader: "PlaygroundEditorTheme__tableCellHeader",
+  tableCellPrimarySelected: "PlaygroundEditorTheme__tableCellPrimarySelected",
+  tableCellResizer: "PlaygroundEditorTheme__tableCellResizer",
+  tableCellSelected: "PlaygroundEditorTheme__tableCellSelected",
+  tableCellSortedIndicator: "PlaygroundEditorTheme__tableCellSortedIndicator",
+  tableResizeRuler: "PlaygroundEditorTheme__tableCellResizeRuler",
+  tableSelected: "PlaygroundEditorTheme__tableSelected",
+  tableSelection: "PlaygroundEditorTheme__tableSelection",
 };
 
 function onError(error: Error) {
