@@ -1,14 +1,11 @@
 "use client";
 
-import { $getRoot, $getSelection } from "lexical";
-
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import EditorConfig from "./config";
+import { AutoFocusPlugin } from "./plugins/AutoFocusPlugin";
 
 const Placeholder = () => {
   return <div className="editor-placeholder">Enter some plain text...</div>;
@@ -25,6 +22,7 @@ const Editor = () => {
             placeholder={<Placeholder />}
           />
         </div>
+        <AutoFocusPlugin />
       </LexicalComposer>
     </>
   );
