@@ -30,6 +30,7 @@
     "lexical": "^0.12.2",
     "lucide-react": "^0.290.0",
     "next": "14.0.1",
+    "postcss-import": "^15.1.0",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.48.2",

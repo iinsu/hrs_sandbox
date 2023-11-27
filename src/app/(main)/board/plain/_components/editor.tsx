@@ -18,7 +18,7 @@ const Editor = () => {
   return (
     <>
       <LexicalComposer initialConfig={EditorConfig}>
-        <div className="editor-container">
+        <div className="editor-container border rounded-md">
           <PlainTextPlugin
             contentEditable={<ContentEditable className="editor-input" />}
             ErrorBoundary={LexicalErrorBoundary}
