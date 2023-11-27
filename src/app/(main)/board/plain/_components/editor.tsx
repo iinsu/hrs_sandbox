@@ -6,6 +6,7 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import EditorConfig from "./config";
 import { AutoFocusPlugin } from "./plugins/AutoFocusPlugin";
+import EmojiPlugin from "./plugins/EmojiPlugin";
 
 const Placeholder = () => {
   return <div className="editor-placeholder">Enter some plain text...</div>;
@@ -23,6 +24,7 @@ const Editor = () => {
           />
         </div>
         <AutoFocusPlugin />
+        <EmojiPlugin />
       </LexicalComposer>
     </>
   );
