@@ -1,4 +1,5 @@
 import { EditorTheme } from "./themes/editor-theme";
+import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 
 export const RichEditorConfig = {
   namespace: "RichEditor",
@@ -9,5 +10,5 @@ export const RichEditorConfig = {
     throw error;
   },
   //Any custom nodes go here
-  nodes: [],
+  nodes: [TableCellNode, TableNode, TableRowNode],
 };
