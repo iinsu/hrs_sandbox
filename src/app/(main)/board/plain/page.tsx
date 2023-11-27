@@ -1,7 +1,9 @@
+import Editor from "./_components/editor";
+
 const PlainEditorPage = () => {
   return (
     <>
-      <div> Plain Eidtor Page</div>
+      <Editor />
     </>
   );
 };
