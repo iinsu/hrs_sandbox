@@ -1,7 +1,9 @@
+import Editor from "./_components/editor";
+
 const RichTextPage = () => {
   return (
     <>
-      <div>Rich Text Page</div>
+      <Editor />
     </>
   );
 };
