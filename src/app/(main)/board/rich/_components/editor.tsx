@@ -7,10 +7,19 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { TablePlugin } from "@lexical/react/LexicalTablePlugin";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { AutoLinkNode, LinkNode } from "@lexical/link";
+import { TRANSFORMERS } from "@lexical/markdown";
 
 import { RichEditorConfig } from "../config";
-import ToolbarPlugin from "./plugins/ToolbarPlugin";
 import { useSettings } from "./context/SettingContext";
+import ToolbarPlugin from "./plugins/ToolbarPlugin";
 
 const Placeholder = () => {
   return <div className="editor-placeholder">Enter some rich text...</div>;
@@ -49,6 +58,7 @@ const Editor = () => {
               hasCellMerge={tableCellMerge}
               hasCellBackgroundColor={tableCellBackgroundColor}
             />
+            <HistoryPlugin />
           </div>
         </div>
       </LexicalComposer>

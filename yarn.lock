@@ -193,6 +193,13 @@
   dependencies:
     "@lexical/utils" "0.12.2"
 
+"@lexical/link@^0.12.4":
+  version "0.12.4"
+  resolved "https://registry.yarnpkg.com/@lexical/link/-/link-0.12.4.tgz#364628ae06396cd0182c978efaa9e66d77b34758"
+  integrity sha512-gmEs0GJGDhgwV1x0IrO7Br2GCALijZLIayGWoLAgYiXZee4WZpvjbngZuC6yghYBhrme6muPRMG2sLMwV2cWiQ==
+  dependencies:
+    "@lexical/utils" "0.12.4"
+
 "@lexical/list@0.12.2":
   version "0.12.2"
   resolved "https://registry.yarnpkg.com/@lexical/list/-/list-0.12.2.tgz#7afdd13026f936144ff93d40382f21924e8e6908"
