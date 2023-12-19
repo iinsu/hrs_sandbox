@@ -1,7 +1,9 @@
+import { RowVirtualDynamic } from "./_components/row-dynamic";
+
 const VirtualDynamicPage = () => {
   return (
     <>
-      <div>Virtual Dynamic Page</div>
+      <RowVirtualDynamic />
     </>
   );
 };
