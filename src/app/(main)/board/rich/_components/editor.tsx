@@ -16,6 +16,9 @@ import { TRANSFORMERS } from "@lexical/markdown";
 import { RichEditorConfig } from "../config";
 import { useSettings } from "./context/SettingContext";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
+import CodeHighlightPlugin from "./plugins/CodeHighlightPlugin";
+import { AutoLinkPlugin } from "@lexical/react/LexicalAutoLinkPlugin";
+import ListMaxIndentLevelPlugin from "./plugins/ListMaxIndentLevelPlogin";
 
 const Placeholder = () => {
   return <div className="editor-placeholder">Enter some rich text...</div>;
@@ -44,17 +47,22 @@ const Editor = () => {
         <div className="editor-container border rounded-md">
           <ToolbarPlugin />
           <div className="editor-inner">
+            <AutoFocusPlugin />
+            <HistoryPlugin />
+            <CodeHighlightPlugin />
+            <ListPlugin />
+            <LinkPlugin />
+            <ListMaxIndentLevelPlugin maxDepth={7} />
+            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
             <RichTextPlugin
               contentEditable={<ContentEditable className="editor-input" />}
               placeholder={<Placeholder />}
               ErrorBoundary={LexicalErrorBoundary}
             />
-            <AutoFocusPlugin />
             <TablePlugin
               hasCellMerge={tableCellMerge}
               hasCellBackgroundColor={tableCellBackgroundColor}
             />
-            <HistoryPlugin />
           </div>
         </div>
       </LexicalComposer>
